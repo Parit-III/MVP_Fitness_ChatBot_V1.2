@@ -1,23 +1,54 @@
-import { useState } from 'react';
-import { User, Lock, Mail } from 'lucide-react';
+import { useState } from "react";
+import { User, Lock, Mail } from "lucide-react";
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  updateProfile,
+} from "firebase/auth";
+import { auth } from "../firebase";
 
-interface AuthPageProps {
-  onLogin: (email: string, password: string) => void;
-  onSignup: (name: string, email: string, password: string) => void;
-}
-
-export function AuthPage({ onLogin, onSignup }: AuthPageProps) {
+export function AuthPage({}) {
   const [isLogin, setIsLogin] = useState(true);
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
-    if (isLogin) {
-      onLogin(email, password);
-    } else {
-      onSignup(name, email, password);
+
+    if (!email || !password || (!isLogin && !name)) {
+      alert("Please fill all fields");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      if (isLogin) {
+        // 🔐 REAL LOGIN
+        await signInWithEmailAndPassword(auth, email, password);
+        alert("Login successful");
+      } else {
+        // 🆕 REAL SIGN UP
+        const userCredential = await createUserWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
+
+        // Save display name to Firebase user profile
+        await updateProfile(userCredential.user, {
+          displayName: name,
+        });
+
+        alert("Account created successfully");
+        setIsLogin(true);
+      }
+    } catch (error: any) {
+      alert(error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -99,7 +130,7 @@ export function AuthPage({ onLogin, onSignup }: AuthPageProps) {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Password
+              Password  
             </label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
