@@ -2,6 +2,7 @@
   "name": "fitpro-backend",
   "type": "module",
   "scripts": {
+    "build": "echo 'no build step'",
     "start": "node server.js"
   },
   "dependencies": {
