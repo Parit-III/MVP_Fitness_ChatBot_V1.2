@@ -12,7 +12,7 @@ interface ChatbotProps {
   userName: string;
 }
 
-const API_URL = `${import.meta.env.VITE_API_URL}/api/chat`; // change this
+const API_URL = `${import.meta.env.VITE_API_URL}/chat`; // change this
 
 export function Chatbot({ userName }: ChatbotProps) {
   const [messages, setMessages] = useState<Message[]>([
