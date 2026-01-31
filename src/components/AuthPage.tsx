@@ -1,22 +1,24 @@
 import { useState } from "react";
-import { User, Lock, Mail } from "lucide-react";
+import { User } from "lucide-react";
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   updateProfile,
+  sendEmailVerification,
+  signOut,
 } from "firebase/auth";
 import { auth } from "../firebase";
 import { createUserDoc } from "../services/userService";
 
-export function AuthPage({}) {
+export function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState(""); // ✅ NEW
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.SyntheticEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!email || !password || (!isLogin && !name)) {
@@ -24,7 +26,6 @@ export function AuthPage({}) {
       return;
     }
 
-    // ✅ NEW: check confirm password
     if (!isLogin && password !== confirmPassword) {
       alert("Passwords do not match");
       return;
@@ -33,10 +34,25 @@ export function AuthPage({}) {
     try {
       setLoading(true);
 
+      // 🔐 LOGIN
       if (isLogin) {
-        await signInWithEmailAndPassword(auth, email, password);
+        const userCredential = await signInWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
+
+        if (!userCredential.user.emailVerified) {
+          alert("กรุณายืนยันอีเมลก่อนเข้าสู่ระบบ 📩");
+          await signOut(auth);
+          return;
+        }
+
         alert("Login successful");
-      } else {
+      }
+
+      // 🆕 SIGN UP
+      else {
         const userCredential = await createUserWithEmailAndPassword(
           auth,
           email,
@@ -47,11 +63,15 @@ export function AuthPage({}) {
           displayName: name,
         });
 
+        // 📧 ส่งเมลยืนยัน
+        await sendEmailVerification(userCredential.user);
+
         await createUserDoc(userCredential.user);
 
-        alert("Account created successfully");
+        alert("สมัครสำเร็จ! กรุณาตรวจสอบอีเมลเพื่อยืนยันบัญชี 📩");
+
         setIsLogin(true);
-        setConfirmPassword(""); // reset
+        setConfirmPassword("");
       }
     } catch (error: any) {
       alert(error.message);
@@ -61,9 +81,8 @@ export function AuthPage({}) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 p-4 relative overflow-hidden">
-      {/* background */}
-      <div className="glass-effect rounded-3xl shadow-2xl w-full max-w-md p-8 relative z-10 border border-white/20 animate-scale-in">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 p-4">
+      <div className="glass-effect rounded-3xl shadow-2xl w-full max-w-md p-8 border border-white/20">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-3xl mb-4 shadow-lg">
             <User className="w-10 h-10 text-white" />
@@ -77,7 +96,7 @@ export function AuthPage({}) {
         <div className="flex gap-2 mb-6">
           <button
             onClick={() => setIsLogin(true)}
-            className={`flex-1 py-3 px-4 rounded-xl ${
+            className={`flex-1 py-3 rounded-xl ${
               isLogin
                 ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white"
                 : "bg-white/60"
@@ -87,7 +106,7 @@ export function AuthPage({}) {
           </button>
           <button
             onClick={() => setIsLogin(false)}
-            className={`flex-1 py-3 px-4 rounded-xl ${
+            className={`flex-1 py-3 rounded-xl ${
               !isLogin
                 ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white"
                 : "bg-white/60"
@@ -99,60 +118,43 @@ export function AuthPage({}) {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isLogin && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Name
-              </label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full py-3 px-4 border rounded-xl"
-                required={!isLogin}
-              />
-            </div>
+            <input
+              type="text"
+              placeholder="Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full py-3 px-4 border rounded-xl"
+              required
+            />
           )}
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full py-3 px-4 border rounded-xl"
-              required
-            />
-          </div>
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full py-3 px-4 border rounded-xl"
+            required
+          />
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Password
-            </label>
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full py-3 px-4 border rounded-xl"
+            required
+          />
+
+          {!isLogin && (
             <input
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Confirm Password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
               className="w-full py-3 px-4 border rounded-xl"
               required
             />
-          </div>
-
-          {/* ✅ NEW: Confirm Password */}
-          {!isLogin && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Confirm Password
-              </label>
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full py-3 px-4 border rounded-xl"
-                required={!isLogin}
-              />
-            </div>
           )}
 
           <button
