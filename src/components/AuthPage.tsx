@@ -6,6 +6,7 @@ import {
   updateProfile,
 } from "firebase/auth";
 import { auth } from "../firebase";
+import { createUserDoc } from "../services/userService";
 
 export function AuthPage({}) {
   const [isLogin, setIsLogin] = useState(true);
@@ -41,6 +42,8 @@ export function AuthPage({}) {
         await updateProfile(userCredential.user, {
           displayName: name,
         });
+        //this put to db
+         await createUserDoc(userCredential.user);
 
         alert("Account created successfully");
         setIsLogin(true);

@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { auth } from "./firebase";
+import { auth , db} from "./firebase";
 
 import { AuthPage } from "./components/AuthPage";
 import { Dashboard } from "./components/Dashboard";
 
 export default function App() {
+  console.log("Firebase Auth:", auth);
+  console.log("Firestore DB:", db);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<{
     name: string;
