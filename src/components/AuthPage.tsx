@@ -59,6 +59,7 @@ export function AuthPage() {
           password
         );
 
+        // อัปเดตชื่อ Profile
         await updateProfile(userCredential.user, {
           displayName: name,
         });
@@ -74,7 +75,14 @@ export function AuthPage() {
         setConfirmPassword("");
       }
     } catch (error: any) {
-      alert(error.message);
+      // จัดการ Error ข้อความให้อ่านง่ายขึ้น
+      if (error.code === "auth/email-already-in-use") {
+        alert("อีเมลนี้ถูกใช้งานแล้ว");
+      } else if (error.code === "auth/wrong-password") {
+        alert("รหัสผ่านไม่ถูกต้อง");
+      } else {
+        alert(error.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -98,8 +106,8 @@ export function AuthPage() {
             onClick={() => setIsLogin(true)}
             className={`flex-1 py-3 rounded-xl ${
               isLogin
-                ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white"
-                : "bg-white/60"
+                ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md"
+                : "bg-white/60 hover:bg-white/80"
             }`}
           >
             Login
@@ -108,8 +116,8 @@ export function AuthPage() {
             onClick={() => setIsLogin(false)}
             className={`flex-1 py-3 rounded-xl ${
               !isLogin
-                ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white"
-                : "bg-white/60"
+                ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md"
+                : "bg-white/60 hover:bg-white/80"
             }`}
           >
             Sign Up
@@ -160,9 +168,9 @@ export function AuthPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-xl"
+            className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-xl font-semibold shadow-lg hover:opacity-90 disabled:opacity-50 transition-all mt-4"
           >
-            {isLogin ? "Login" : "Sign Up"}
+            {loading ? "Processing..." : isLogin ? "Login" : "Sign Up"}
           </button>
         </form>
       </div>
