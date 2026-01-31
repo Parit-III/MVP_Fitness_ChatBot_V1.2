@@ -86,7 +86,7 @@ OUTPUT FORMAT EXACTLY JSON:
 /* ===== CHAT ======== */
 /* ===================== */
 router.post("/chat", async (req, res) => {
-  const { messages, plan } = req.body;
+  const { messages } = req.body;
 
   console.log("📩 /chat called");
   console.log("MESSAGES:", messages);
@@ -97,7 +97,7 @@ router.post("/chat", async (req, res) => {
         role: "system",
         content: "You are a personal trainer. Reply with text only."
       },
-      ...(messages || [])
+      ...(messages || []) 
     ], 300);
 
     res.json({ reply });
