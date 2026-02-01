@@ -12,7 +12,7 @@ interface ChatbotProps {
   userName: string;
 }
 
-const API_URL = `${import.meta.env.VITE_API_URL}/api/ai/chat`; // change this
+const API_URL = `${import.meta.env.VITE_API_URL}/api/ai/chat`;
 
 export function Chatbot({ userName }: ChatbotProps) {
   const [messages, setMessages] = useState<Message[]>([
@@ -31,17 +31,31 @@ export function Chatbot({ userName }: ChatbotProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const sendToBackend = async (text: string) => {
+  // ✅ ต้องอยู่ใน component
+  const sendToBackend = async (allMessages: Message[]) => {
+    const formatted = [
+      {
+        role: "system",
+        content:
+          "You are FitPro AI Coach. Remember user goals and never repeat onboarding questions.",
+      },
+      ...allMessages.map((m) => ({
+        role: m.sender === "user" ? "user" : "assistant",
+        content: m.text,
+      })),
+    ];
+
     const res = await fetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: text }),
+      body: JSON.stringify({ messages: formatted }),
     });
 
     const data = await res.json();
     return data.reply;
   };
 
+  // ✅ ต้องอยู่ใน component
   const handleSendMessage = async () => {
     if (!inputText.trim()) return;
 
@@ -56,7 +70,7 @@ export function Chatbot({ userName }: ChatbotProps) {
     setInputText("");
 
     try {
-      const reply = await sendToBackend(userMsg.text);
+      const reply = await sendToBackend([...messages, userMsg]);
 
       const botMsg: Message = {
         id: (Date.now() + 1).toString(),
@@ -79,6 +93,7 @@ export function Chatbot({ userName }: ChatbotProps) {
     }
   };
 
+  // ✅ return ต้องอยู่ท้าย component
   return (
     <>
       {/* Header */}
@@ -88,14 +103,21 @@ export function Chatbot({ userName }: ChatbotProps) {
         </div>
         <div>
           <h3 className="text-lg font-bold">FitPro AI Coach</h3>
-          <p className="text-sm text-indigo-100">Your personalized fitness assistant</p>
+          <p className="text-sm text-indigo-100">
+            Your personalized fitness assistant
+          </p>
         </div>
       </div>
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50">
         {messages.map((m) => (
-          <div key={m.id} className={`flex ${m.sender === "user" ? "justify-end" : "justify-start"}`}>
+          <div
+            key={m.id}
+            className={`flex ${
+              m.sender === "user" ? "justify-end" : "justify-start"
+            }`}
+          >
             <div
               className={`max-w-[80%] rounded-2xl px-4 py-3 ${
                 m.sender === "user"
@@ -105,7 +127,10 @@ export function Chatbot({ userName }: ChatbotProps) {
             >
               <p className="text-sm whitespace-pre-line">{m.text}</p>
               <p className="text-xs mt-2 text-gray-400">
-                {m.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                {m.timestamp.toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
               </p>
             </div>
           </div>
