@@ -13,8 +13,7 @@ app.use(cors({
     "http://localhost:5173",
     "https://parit-iii.github.io",
     "http://localhost:3000"
-  ],
-  credentials: true
+  ]
 }));
 
 app.use(express.json());
