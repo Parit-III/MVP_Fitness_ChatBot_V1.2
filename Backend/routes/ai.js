@@ -95,9 +95,19 @@ router.post("/chat", async (req, res) => {
     const reply = await groq([
       {
         role: "system",
-        content: "You are a personal trainer. Reply with text only."
+        content: `
+You are FitPro AI Coach, a friendly and professional fitness assistant.
+
+Rules:
+- Do NOT repeat onboarding questions if the user already answered them
+- If user mentions a goal (lose weight, build muscle, endurance), remember it
+- Ask ONE clear follow-up question only when needed
+- Give short, practical advice (no essays)
+- Be conversational and motivating
+- Do NOT restart the conversation
+`
       },
-      ...(messages || []) 
+      ...(messages || [])
     ], 300);
 
     res.json({ reply });
