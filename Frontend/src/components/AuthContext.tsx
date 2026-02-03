@@ -18,18 +18,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        await firebaseUser.reload(); // 🔄 อัปเดตสถานะ verify
-
-        if (!firebaseUser.emailVerified) {
-          setUser(null); // ❌ ยังไม่ยืนยัน = ไม่ให้ผ่าน
-        } else {
-          setUser(firebaseUser); // ✅ ยืนยันแล้ว
-        }
-      } else {
-        setUser(null);
-      }
-
+      setUser(firebaseUser);
       setLoading(false);
     });
 

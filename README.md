@@ -9,14 +9,16 @@
 
   Run `npm run dev` to start the development server.
   
+
 ```
-Chat Bot with Authentication
+MVP_Fitness_ChatBot_V1.2
 ├─ Backend
 │  ├─ package-lock.json
 │  ├─ package.json
+│  ├─ routes
+│  │  └─ ai.js
 │  └─ server.js
 ├─ Frontend
-│  ├─ .env
 │  ├─ build
 │  │  ├─ assets
 │  │  │  ├─ index-CNomaQlj.css
@@ -25,7 +27,7 @@ Chat Bot with Authentication
 │  ├─ dist
 │  │  ├─ assets
 │  │  │  ├─ index-CNomaQlj.css
-│  │  │  └─ index-CVwTmMS-.js
+│  │  │  └─ index-NG9lUaHv.js
 │  │  └─ index.html
 │  ├─ index.html
 │  ├─ package-lock.json

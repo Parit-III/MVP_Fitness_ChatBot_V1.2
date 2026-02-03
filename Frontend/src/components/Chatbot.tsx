@@ -1,12 +1,19 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useContext } from "react";
 import { Send, Bot } from "lucide-react";
+import { AuthContext } from "./AuthContext";
+import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "../firebase";
+
 
 interface Message {
   id: string;
   text: string;
-  sender: "user" | "bot";
+  senderRole: "user" | "bot";   // ใช้จัด UI
+  senderId?: string;            // uid
+  senderName?: string;          // ชื่อที่เอาไว้ดูใน Firebase
   timestamp: Date;
 }
+
 
 interface ChatbotProps {
   userName: string;
@@ -15,15 +22,8 @@ interface ChatbotProps {
 const API_URL = `${import.meta.env.VITE_API_URL}/api/ai/chat`;
 
 export function Chatbot({ userName }: ChatbotProps) {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      text: `Hi ${userName}! 👋 I'm your AI fitness assistant. Ask me anything.`,
-      sender: "bot",
-      timestamp: new Date(),
-    },
-  ]);
-
+  const { user, loading } = useContext(AuthContext);//new
+  const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -40,7 +40,7 @@ export function Chatbot({ userName }: ChatbotProps) {
           "You are FitPro AI Coach. Remember user goals and never repeat onboarding questions.",
       },
       ...allMessages.map((m) => ({
-        role: m.sender === "user" ? "user" : "assistant",
+        role: m.senderRole === "user" ? "user" : "assistant",
         content: m.text,
       })),
     ];
@@ -57,43 +57,116 @@ export function Chatbot({ userName }: ChatbotProps) {
 
   // ✅ ต้องอยู่ใน component
   const handleSendMessage = async () => {
-    if (!inputText.trim()) return;
+  if (loading || !user || !inputText.trim()) return;
 
-    const userMsg: Message = {
-      id: Date.now().toString(),
-      text: inputText,
-      sender: "user",
+  const userMsg: Message = {
+    id: Date.now().toString(),
+    text: inputText,
+    senderRole: "user",
+    senderId: user.uid,
+    senderName: user.displayName || user.email || "Unknown",
+    timestamp: new Date(),
+  };
+
+  setInputText("");
+
+  try {
+    const reply = await sendToBackend([...messages, userMsg]);
+
+    const botMsg: Message = {
+      id: (Date.now() + 1).toString(),
+      text: reply,
+      senderRole: "bot",
+      senderId: "bot",
+      senderName: "FitPro AI",
       timestamp: new Date(),
     };
 
-    setMessages((prev) => [...prev, userMsg]);
-    setInputText("");
 
-    try {
-      const reply = await sendToBackend([...messages, userMsg]);
-
-      const botMsg: Message = {
-        id: (Date.now() + 1).toString(),
-        text: reply,
-        sender: "bot",
+    const newMessages = [...messages, userMsg, botMsg];
+    setMessages(newMessages);
+    await saveChatToFirestore(newMessages);
+  } catch {
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: "err",
+        text: "⚠️ Server error. Please try again.",
+        senderRole: "bot",
+        senderId: "bot",
+        senderName: "FitPro AI",
         timestamp: new Date(),
-      };
+      },
+    ]);
+  }
+};
 
-      setMessages((prev) => [...prev, botMsg]);
-    } catch {
-      setMessages((prev) => [
-        ...prev,
+
+  //new
+  useEffect(() => {
+  if (!user) return;
+
+  const loadChat = async () => {
+    const ref = doc(db, "chats", user.uid);
+    const snap = await getDoc(ref);
+
+    // 👉 ถ้ามี chat เก่า
+    if (snap.exists() && snap.data().messages?.length > 0) {
+      const savedMessages = snap.data().messages;
+
+      // ✅ limit 100 ล่าสุด
+      const limitedMessages = savedMessages.slice(-100);
+
+      setMessages(
+        limitedMessages.map((m: any) => ({
+          ...m,
+          timestamp: new Date(m.timestamp),
+        }))
+      );
+    } 
+    // 👉 ถ้าไม่มี chat เก่า → ใส่ greeting
+    else {
+      setMessages([
         {
-          id: "err",
-          text: "⚠️ Server error. Please try again.",
-          sender: "bot",
+          id: "greeting",
+          text: `Hi ${userName}! 👋 I'm your AI fitness assistant. Ask me anything.`,
+          senderRole: "bot",
+          senderId: "bot",
+          senderName: "FitPro AI",
           timestamp: new Date(),
         },
       ]);
     }
   };
 
-  // ✅ return ต้องอยู่ท้าย component
+  loadChat();
+}, [user, userName]);
+
+
+const saveChatToFirestore = async (allMessages: Message[]) => {
+  if (!user) return;
+
+  const limitedMessages = allMessages.slice(-100);
+
+  await setDoc(
+    doc(db, "chats", user.uid),
+    {
+      messages: limitedMessages.map((m) => ({
+        ...m,
+        timestamp: m.timestamp.getTime(),
+      })),
+      updatedAt: serverTimestamp(),
+    },
+    { merge: true }
+  );
+};
+
+
+
+
+
+//new
+
   return (
     <>
       {/* Header */}
@@ -115,16 +188,21 @@ export function Chatbot({ userName }: ChatbotProps) {
           <div
             key={m.id}
             className={`flex ${
-              m.sender === "user" ? "justify-end" : "justify-start"
+              m.senderRole === "user" ? "justify-end" : "justify-start"
             }`}
           >
             <div
               className={`max-w-[80%] rounded-2xl px-4 py-3 ${
-                m.sender === "user"
+                m.senderRole === "user"
                   ? "bg-indigo-600 text-white"
                   : "bg-white shadow-md"
               }`}
             >
+
+              {m.senderRole === "bot" && (
+                <p className="text-xs text-gray-400 mb-1">{m.senderName}</p>
+              )}
+
               <p className="text-sm whitespace-pre-line">{m.text}</p>
               <p className="text-xs mt-2 text-gray-400">
                 {m.timestamp.toLocaleTimeString([], {
@@ -145,12 +223,20 @@ export function Chatbot({ userName }: ChatbotProps) {
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
-            placeholder="Type your message..."
-            className="flex-1 px-4 py-3 border rounded-full focus:ring-2 focus:ring-indigo-500"
+            placeholder={
+              loading
+                ? "Checking login..."
+                : !user
+                ? "Please login to chat"
+                : "Type your message..."
+            }
+            disabled={loading || !user}   // 👈 ใส่ตรงนี้
+            className="flex-1 px-4 py-3 border rounded-full focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
           />
           <button
             onClick={handleSendMessage}
-            className="w-12 h-12 bg-indigo-600 text-white rounded-full flex items-center justify-center hover:bg-indigo-700"
+             disabled={loading || !user}
+            className="w-12 h-12 bg-indigo-600 text-white rounded-full flex items-center justify-center hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Send className="w-5 h-5" />
           </button>
