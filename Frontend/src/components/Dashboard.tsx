@@ -5,6 +5,7 @@ import { Chatbot } from './Chatbot';
 import { ProfilePage } from './ProfilePage';
 import { Exercise } from './ExercisePlans';
 import { getExercises } from "../services/exerciseService";
+import { WorkoutLibrary } from "./WorkoutLibrary";
 
 interface DashboardProps {
   user: { name: string; email: string };
@@ -194,6 +195,12 @@ useEffect(() => {
           </div>
         ) : (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+            <WorkoutLibrary
+              exercises={exerciseLibrary}
+              onUpdateExercise={handleUpdateExercise}
+              onDeleteExercise={handleDeleteExercise}
+              onAddExercise={handleAddExercise}
+            />
           </div>
         )}
       </main>

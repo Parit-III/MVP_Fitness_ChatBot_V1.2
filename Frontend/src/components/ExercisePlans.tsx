@@ -5,7 +5,7 @@ import { doc, onSnapshot, setDoc, serverTimestamp } from 'firebase/firestore';
 import { AuthContext } from './AuthContext';
 
 // Standard interfaces preserved
-export interface Exercise { id: string; name: string; sets: number; reps: string; calories: number; description: string; instructions: string[]; tips: string[]; }
+export interface Exercise { id: string; duration?:string; name: string; sets: number; reps: string; calories: number; description: string; instructions: string[]; tips: string[]; }
 export interface ExercisePlan { 
   id: string; 
   name: string; 
