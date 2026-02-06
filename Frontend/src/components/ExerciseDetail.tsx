@@ -10,6 +10,11 @@ interface ExerciseDetailProps {
 }
 
 export function ExerciseDetail({ exercise, planName, onBack, onComplete }: ExerciseDetailProps) {
+  // ✅ ใส่ตรงนี้เลย
+  if (!exercise) {
+    return <div className="p-8">Exercise not found</div>;
+  }
+
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [currentSet, setCurrentSet] = useState(1);
   const [isCompleted, setIsCompleted] = useState(false);

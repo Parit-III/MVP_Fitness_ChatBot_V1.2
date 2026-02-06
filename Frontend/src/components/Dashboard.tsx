@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { MessageCircle, Dumbbell, LogOut, X, List, User, BookOpen } from 'lucide-react';
-import { ExercisePlans, ExercisePlan } from './ExercisePlans';
+import { ExercisePlans } from './ExercisePlans';
 import { Chatbot } from './Chatbot';
 import { ProfilePage } from './ProfilePage';
 import { Exercise } from './ExercisePlans';
 import { getExercises } from "../services/exerciseService";
 import { WorkoutLibrary } from "./WorkoutLibrary";
+import { ExerciseDetail } from "./ExerciseDetail";
 
 interface DashboardProps {
   user: { name: string; email: string };
@@ -18,8 +19,11 @@ interface WorkoutStreak {
 }
 
 export function Dashboard({ user, onLogout }: DashboardProps) {
-  const [view, setView] = useState<'chat' | 'plans' | 'profile' | 'workouts'>('chat');
-  const [personalizedPlans, setPersonalizedPlans] = useState<ExercisePlan[]>([]);
+  const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
+  const [selectedPlanName, setSelectedPlanName] = useState<string>("");
+
+  const [view, setView] = useState<'chat' | 'plans' | 'profile' | 'workouts' | 'exercise'>('chat');
+
   const [completedWorkouts, setCompletedWorkouts] = useState<WorkoutStreak[]>([
     { date: '2024-01-20', completed: true },
     { date: '2024-01-21', completed: true },
@@ -43,11 +47,6 @@ useEffect(() => {
   fetchExercises();
 }, []);
 
-
-  const handlePlanCreated = (plan: ExercisePlan) => {
-    setPersonalizedPlans(prev => [...prev, plan]);
-  };
-
   const handleWorkoutComplete = (date: string) => {
     setCompletedWorkouts(prev => {
       const existing = prev.find(w => w.date === date);
@@ -56,22 +55,6 @@ useEffect(() => {
       }
       return [...prev, { date, completed: true }];
     });
-  };
-
-  const handleUpdatePlan = (updatedPlan: ExercisePlan) => {
-    setPersonalizedPlans(prev =>
-      prev.map(p => p.id === updatedPlan.id ? updatedPlan : p)
-    );
-  };
-
-  const handleDeletePlan = (planId: string) => {
-    setPersonalizedPlans(prev => prev.filter(p => p.id !== planId));
-  };
-
-  const handlePinPlan = (planId: string) => {
-    setPersonalizedPlans(prev =>
-      prev.map(p => p.id === planId ? { ...p, isPinned: !p.isPinned } : p)
-    );
   };
 
   const handleUpdateExercise = (exercise: Exercise) => {
@@ -176,14 +159,25 @@ useEffect(() => {
           </div>
         ) : view === 'plans' ? (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-            <ExercisePlans 
-              plans={personalizedPlans}
+            <ExercisePlans
               availableExercises={exerciseLibrary}
-              onWorkoutComplete={handleWorkoutComplete}
-              onUpdatePlan={handleUpdatePlan}
-              onDeletePlan={handleDeletePlan}
-              onPinPlan={handlePinPlan}
+              onStartExercise={(exerciseFromPlan, planName) => {
+
+                const fullExercise = exerciseLibrary.find(
+                  ex => ex.name === exerciseFromPlan.name
+                );
+
+                if (!fullExercise) {
+                  console.error("Exercise not found in library:", exerciseFromPlan);
+                  return;
+                }
+
+                setSelectedExercise(fullExercise);
+                setSelectedPlanName(planName);
+                setView('exercise');
+              }}
             />
+
           </div>
         ) : view === 'profile' ? (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
@@ -193,6 +187,18 @@ useEffect(() => {
               onWorkoutComplete={handleWorkoutComplete}
             />
           </div>
+        )  : view === 'exercise' ? (
+          <div className="max-w-4xl mx-auto px-4 py-8 w-full">
+            {selectedExercise && (
+              <ExerciseDetail
+                exercise={selectedExercise}
+                planName={selectedPlanName}
+                onBack={() => setView('plans')}
+              />
+
+            )}
+          </div>
+
         ) : (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
             <WorkoutLibrary
@@ -202,7 +208,9 @@ useEffect(() => {
               onAddExercise={handleAddExercise}
             />
           </div>
-        )}
+        )
+        
+        }
       </main>
     </div>
   );

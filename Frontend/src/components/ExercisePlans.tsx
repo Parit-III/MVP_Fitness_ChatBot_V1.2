@@ -13,10 +13,16 @@ export interface ExercisePlan {
   days: any[]; 
   isPinned?: boolean;
 }
+interface ExercisePlansProps {
+  availableExercises: Exercise[];
+  onStartExercise: (exercise: Exercise, planName: string) => void;
+}
 
 
-
-export function ExercisePlans({ plans, availableExercises, ...props }: any) {
+export function ExercisePlans({
+  availableExercises,
+  onStartExercise,
+}: ExercisePlansProps) {
   const { user } = useContext(AuthContext);
   const [bigPlans, setBigPlans] = useState<ExercisePlan[]>([]);
   const [activePlanId, setActivePlanId] = useState<string | null>(null);
@@ -109,7 +115,16 @@ export function ExercisePlans({ plans, availableExercises, ...props }: any) {
                   <div key={dIdx} className="mt-4 p-3 bg-indigo-50/50 rounded-xl border border-indigo-100">
                     <p className="font-bold text-indigo-900 text-sm mb-2">{day.day}</p>
                     {day.exercises.map((ex: any, eIdx: number) => (
-                      <div key={eIdx} className="text-xs text-gray-600 flex justify-between border-b border-indigo-100 py-1 last:border-0">
+                      <div
+                        key={eIdx}
+                        onClick={() =>
+                          onStartExercise(
+                            { id: ex.id } as Exercise,
+                            plan.name
+                          )
+                        }
+                        className="cursor-pointer text-xs text-gray-600 flex justify-between border-b border-indigo-100 py-1 last:border-0 hover:bg-indigo-100 rounded transition"
+                      >
                         <span>{ex.name}</span>
                         <span className="font-medium">{ex.sets}x{ex.reps}</span>
                       </div>
