@@ -6,11 +6,19 @@ import { AuthContext } from './AuthContext';
 
 // Standard interfaces preserved
 export interface Exercise { id: string; name: string; sets: number; reps: string; calories: number; description: string; instructions: string[]; tips: string[]; }
-export interface BigPlan { id: string; name: string; difficulty: string; days: any[]; isPinned?: boolean; }
+export interface ExercisePlan { 
+  id: string; 
+  name: string; 
+  difficulty: string; 
+  days: any[]; 
+  isPinned?: boolean;
+}
 
-export function ExercisePlans() {
+
+
+export function ExercisePlans({ plans, availableExercises, ...props }: any) {
   const { user } = useContext(AuthContext);
-  const [bigPlans, setBigPlans] = useState<BigPlan[]>([]);
+  const [bigPlans, setBigPlans] = useState<ExercisePlan[]>([]);
   const [activePlanId, setActivePlanId] = useState<string | null>(null);
   const [showMenu, setShowMenu] = useState<string | null>(null);
   const [expandedPlan, setExpandedPlan] = useState<string | null>(null);
@@ -31,7 +39,7 @@ export function ExercisePlans() {
     if (!user) return;
     const newName = prompt("Enter name for your new Big Plan:");
     if (!newName) return;
-    const newPlan: BigPlan = { id: `plan_${Date.now()}`, name: newName, difficulty: 'Beginner', days: [] };
+    const newPlan: ExercisePlan = { id: `plan_${Date.now()}`, name: newName, difficulty: 'Beginner', days: [] };
     await setDoc(doc(db, "userPlans", user.uid), {
       plans: [...bigPlans, newPlan]
     }, { merge: true });

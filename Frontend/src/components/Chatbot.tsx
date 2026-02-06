@@ -22,6 +22,8 @@ const PLAN_GEN_URL = `${import.meta.env.VITE_API_URL}/api/ai/plan`;
 const PLAN_UPDATE_URL = `${import.meta.env.VITE_API_URL}/api/ai/update-plan`;
 
 export function Chatbot({ userName }: ChatbotProps) {
+  // const [isThinking, setIsThinking] = useState(false);// ai กำลังคิด
+
   const { user, loading } = useContext(AuthContext);
 
   const [messages, setMessages] = useState<Message[]>([]);
@@ -126,6 +128,7 @@ export function Chatbot({ userName }: ChatbotProps) {
     setInputText("");
     saveChatHistory(newMsgs);
 
+    // setIsThinking(true);// ai กำลังคิด
     try {
       if (toggled) {
         const res = await fetch(CHAT_API_URL, {
@@ -137,6 +140,7 @@ export function Chatbot({ userName }: ChatbotProps) {
         const updated = [...newMsgs, { id: Date.now().toString(), text: data.reply, senderRole: "bot", senderName: "FitPro AI", timestamp: new Date() } as Message];
         setMessages(updated);
         saveChatHistory(updated);
+        // setIsThinking(false); //ai 👈 หยุดคิด
       } else if (activePlan) {
         if (activePlan.days.length === 0) {
           const fieldNames = ["age", "weight", "height", "goal", "injury", "time"];

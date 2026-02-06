@@ -36,6 +36,13 @@ const groq = async (messages, max_tokens = 900) => {
 router.post("/plan", async (req, res) => {
   const { age, weight, height, goal, injury, time } = req.body;
 
+  //const topExercises = getRelevantContext(userGoalVector, 3);
+
+  // const contextText = topExercises.map(ex => 
+  //   `- ${ex.Title}: ${ex.Desc} (Equipment: ${ex.Equipment})`
+  // ).join("\n");
+
+  //-Use the following high-quality exercise data to build the plan:${contextText}
   const prompt = `
 You are a professional personal trainer.
 You are creating a workout plan (5 days Monday-Friday).

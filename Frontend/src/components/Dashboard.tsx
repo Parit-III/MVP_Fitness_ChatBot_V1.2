@@ -3,7 +3,6 @@ import { MessageCircle, Dumbbell, LogOut, X, List, User, BookOpen } from 'lucide
 import { ExercisePlans, ExercisePlan } from './ExercisePlans';
 import { Chatbot } from './Chatbot';
 import { ProfilePage } from './ProfilePage';
-import { WorkoutLibrary } from './WorkoutLibrary';
 import { Exercise } from './ExercisePlans';
 import { getExercises } from "../services/exerciseService";
 
@@ -195,12 +194,6 @@ useEffect(() => {
           </div>
         ) : (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-            <WorkoutLibrary
-              exercises={exerciseLibrary}
-              onUpdateExercise={handleUpdateExercise}
-              onDeleteExercise={handleDeleteExercise}
-              onAddExercise={handleAddExercise}
-            />
           </div>
         )}
       </main>
