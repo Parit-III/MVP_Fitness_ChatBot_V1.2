@@ -6,9 +6,11 @@ import { ProfilePage } from './ProfilePage';
 import { Exercise } from './ExercisePlans';
 import { getExercises } from "../services/exerciseService";
 import { WorkoutLibrary } from "./WorkoutLibrary";
+import { doc, getDoc, setDoc, serverTimestamp, onSnapshot } from "firebase/firestore";
+import { db } from "../firebase";
 
 interface DashboardProps {
-  user: { name: string; email: string };
+  user: { name: string; email: string; uid: string};
   onLogout: () => void;
 }
 
@@ -48,15 +50,22 @@ useEffect(() => {
     setPersonalizedPlans(prev => [...prev, plan]);
   };
 
-  const handleWorkoutComplete = (date: string) => {
-    setCompletedWorkouts(prev => {
-      const existing = prev.find(w => w.date === date);
-      if (existing) {
-        return prev.map(w => w.date === date ? { ...w, completed: true } : w);
-      }
-      return [...prev, { date, completed: true }];
-    });
-  };
+  // Inside Dashboard.tsx
+const handleWorkoutComplete = async (date: string) => {
+  if (!user.uid) return;
+
+  try {
+    const workoutRef = doc(db, 'users', user.uid, 'workouts', date);
+    await setDoc(workoutRef, {
+      completed: true,
+      timestamp: serverTimestamp()
+    }, { merge: true });
+    
+    console.log("Workout saved to Firestore!");
+  } catch (error) {
+    console.error("Error saving workout:", error);
+  }
+};
 
   const handleUpdatePlan = (updatedPlan: ExercisePlan) => {
     setPersonalizedPlans(prev =>
@@ -188,9 +197,8 @@ useEffect(() => {
         ) : view === 'profile' ? (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
             <ProfilePage 
+              userId={user.uid} // Now passing the uid for Firestore
               userName={user.name}
-              completedWorkouts={completedWorkouts}
-              onWorkoutComplete={handleWorkoutComplete}
             />
           </div>
         ) : (
