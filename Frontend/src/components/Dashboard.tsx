@@ -6,10 +6,15 @@ import { ProfilePage } from './ProfilePage';
 import { Exercise } from './ExercisePlans';
 import { getExercises } from "../services/exerciseService";
 import { WorkoutLibrary } from "./WorkoutLibrary";
+<<<<<<< HEAD
 import { ExerciseDetail } from "./ExerciseDetail";
+=======
+import { doc, getDoc, setDoc, serverTimestamp, onSnapshot } from "firebase/firestore";
+import { db } from "../firebase";
+>>>>>>> b3412f7b81e228779c27a1862f675e5c82137629
 
 interface DashboardProps {
-  user: { name: string; email: string };
+  user: { name: string; email: string; uid: string};
   onLogout: () => void;
 }
 
@@ -47,6 +52,7 @@ useEffect(() => {
   fetchExercises();
 }, []);
 
+<<<<<<< HEAD
   const handleWorkoutComplete = (date: string) => {
     setCompletedWorkouts(prev => {
       const existing = prev.find(w => w.date === date);
@@ -56,6 +62,29 @@ useEffect(() => {
       return [...prev, { date, completed: true }];
     });
   };
+=======
+
+  const handlePlanCreated = (plan: ExercisePlan) => {
+    setPersonalizedPlans(prev => [...prev, plan]);
+  };
+
+  // Inside Dashboard.tsx
+const handleWorkoutComplete = async (date: string) => {
+  if (!user.uid) return;
+
+  try {
+    const workoutRef = doc(db, 'users', user.uid, 'workouts', date);
+    await setDoc(workoutRef, {
+      completed: true,
+      timestamp: serverTimestamp()
+    }, { merge: true });
+    
+    console.log("Workout saved to Firestore!");
+  } catch (error) {
+    console.error("Error saving workout:", error);
+  }
+};
+>>>>>>> b3412f7b81e228779c27a1862f675e5c82137629
 
   const handleUpdateExercise = (exercise: Exercise) => {
     setExerciseLibrary(prev =>
@@ -182,9 +211,8 @@ useEffect(() => {
         ) : view === 'profile' ? (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
             <ProfilePage 
+              userId={user.uid} // Now passing the uid for Firestore
               userName={user.name}
-              completedWorkouts={completedWorkouts}
-              onWorkoutComplete={handleWorkoutComplete}
             />
           </div>
         )  : view === 'exercise' ? (

@@ -1,6 +1,18 @@
-import { useState } from 'react';
-import { Calendar, Flame, TrendingUp, Activity, Plus, User } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Calendar, Flame, TrendingUp, Activity, Plus } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+// Firebase Imports
+import { db } from '../firebase'; 
+import { 
+  doc, 
+  collection, 
+  onSnapshot, 
+  setDoc, 
+  addDoc, 
+  query, 
+  orderBy, 
+  serverTimestamp 
+} from 'firebase/firestore';
 
 interface WorkoutStreak {
   date: string; // YYYY-MM-DD format
@@ -15,23 +27,99 @@ interface BMIRecord {
 }
 
 interface ProfilePageProps {
+  userId: string; // Pass the UID from your auth state
   userName: string;
-  completedWorkouts: WorkoutStreak[];
-  onWorkoutComplete: (date: string) => void;
 }
 
-export function ProfilePage({ userName, completedWorkouts, onWorkoutComplete }: ProfilePageProps) {
-  const [bmiRecords, setBmiRecords] = useState<BMIRecord[]>([
-    { date: '2024-01-01', bmi: 24.5, weight: 70, height: 170 },
-    { date: '2024-01-15', bmi: 24.2, weight: 69, height: 170 },
-    { date: '2024-01-29', bmi: 23.8, weight: 68, height: 170 },
-  ]);
+export function ProfilePage({ userId, userName }: ProfilePageProps) {
+  const [completedWorkouts, setCompletedWorkouts] = useState<WorkoutStreak[]>([]);
+  const [bmiRecords, setBmiRecords] = useState<BMIRecord[]>([]);
   
   const [showBMIForm, setShowBMIForm] = useState(false);
   const [newWeight, setNewWeight] = useState('');
   const [newHeight, setNewHeight] = useState('170');
 
-  // Calculate current streak
+  // --- Firestore Sync Logic ---
+
+  useEffect(() => {
+    if (!userId) return;
+
+    // 1. Listen for Workouts
+    const workoutsRef = collection(db, 'users', userId, 'workouts');
+    const unsubWorkouts = onSnapshot(workoutsRef, (snapshot) => {
+      const workoutData = snapshot.docs.map(doc => ({
+        date: doc.id,
+        completed: doc.data().completed
+      }));
+      setCompletedWorkouts(workoutData);
+    });
+
+    // 2. Listen for BMI Records
+    const bmiRef = query(
+      collection(db, 'users', userId, 'bmiRecords'), 
+      orderBy('date', 'asc')
+    );
+    const unsubBMI = onSnapshot(bmiRef, (snapshot) => {
+      const records = snapshot.docs.map(doc => doc.data() as BMIRecord);
+      setBmiRecords(records);
+    });
+
+    return () => {
+      unsubWorkouts();
+      unsubBMI();
+    };
+  }, [userId]);
+
+  // --- Action Handlers ---
+
+  const handleAddBMI = async () => {
+  // 1. Check if inputs are empty
+  if (!newWeight || !newHeight) return;
+  
+  // 2. IMPORTANT: Check if userId exists before calling Firestore
+  if (!userId) {
+    console.error("Error: userId is undefined. Check if it's passed from Dashboard.");
+    alert("User session not found. Please try logging in again.");
+    return;
+  }
+  
+  try {
+    const weight = parseFloat(newWeight);
+    const height = parseFloat(newHeight) / 100;
+    const bmi = weight / (height * height);
+    
+    const newRecord = {
+      date: new Date().toISOString().split('T')[0],
+      bmi: parseFloat(bmi.toFixed(1)),
+      weight,
+      height: parseFloat(newHeight),
+      createdAt: serverTimestamp()
+    };
+    
+    // The error happens here if userId is undefined
+    const bmiCollectionRef = collection(db, 'users', userId, 'bmiRecords');
+    await addDoc(bmiCollectionRef, newRecord);
+    
+    setNewWeight('');
+    setShowBMIForm(false);
+  } catch (error) {
+    console.error("Error adding BMI record:", error);
+  }
+};
+
+  // Optional: Function to log today's workout to Firestore
+  const toggleTodayWorkout = async () => {
+    const todayStr = new Date().toISOString().split('T')[0];
+    const workoutRef = doc(db, 'users', userId, 'workouts', todayStr);
+    
+    await setDoc(workoutRef, {
+      completed: true,
+      timestamp: serverTimestamp()
+    }, { merge: true });
+  };
+
+  // --- Existing Logic (Unchanged) ---
+
   const calculateStreak = (): number => {
     const sortedDates = completedWorkouts
       .filter(w => w.completed)
@@ -39,7 +127,6 @@ export function ProfilePage({ userName, completedWorkouts, onWorkoutComplete }: 
       .sort((a, b) => b.getTime() - a.getTime());
 
     if (sortedDates.length === 0) return 0;
-
     let streak = 0;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -47,54 +134,37 @@ export function ProfilePage({ userName, completedWorkouts, onWorkoutComplete }: 
     for (let i = 0; i < sortedDates.length; i++) {
       const checkDate = new Date(today);
       checkDate.setDate(today.getDate() - i);
-      
       const hasWorkout = sortedDates.some(date => {
         const d = new Date(date);
         d.setHours(0, 0, 0, 0);
         return d.getTime() === checkDate.getTime();
       });
-
-      if (hasWorkout) {
-        streak++;
-      } else if (i > 0) {
-        break;
-      }
+      if (hasWorkout) streak++; else if (i > 0) break;
     }
-
     return streak;
   };
 
-  // Get calendar days for current month
   const getCalendarDays = () => {
     const today = new Date();
     const year = today.getFullYear();
     const month = today.getMonth();
-    
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
-    
     const days: Array<{ date: Date; hasWorkout: boolean; isToday: boolean }> = [];
-    
-    // Add empty days for alignment
     const startDay = firstDay.getDay();
     for (let i = 0; i < startDay; i++) {
       days.push({ date: new Date(0), hasWorkout: false, isToday: false });
     }
-    
-    // Add month days
     for (let day = 1; day <= lastDay.getDate(); day++) {
       const date = new Date(year, month, day);
       const dateStr = date.toISOString().split('T')[0];
       const hasWorkout = completedWorkouts.some(w => w.date === dateStr && w.completed);
       const isToday = date.toDateString() === today.toDateString();
-      
       days.push({ date, hasWorkout, isToday });
     }
-    
     return days;
   };
 
-  // Calculate workout frequency
   const calculateWorkoutFrequency = () => {
     const last30Days = completedWorkouts.filter(w => {
       const workoutDate = new Date(w.date);
@@ -102,27 +172,7 @@ export function ProfilePage({ userName, completedWorkouts, onWorkoutComplete }: 
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       return workoutDate >= thirtyDaysAgo && w.completed;
     });
-    
     return last30Days.length;
-  };
-
-  const handleAddBMI = () => {
-    if (!newWeight || !newHeight) return;
-    
-    const weight = parseFloat(newWeight);
-    const height = parseFloat(newHeight) / 100; // convert cm to m
-    const bmi = weight / (height * height);
-    
-    const newRecord: BMIRecord = {
-      date: new Date().toISOString().split('T')[0],
-      bmi: parseFloat(bmi.toFixed(1)),
-      weight,
-      height: parseFloat(newHeight),
-    };
-    
-    setBmiRecords([...bmiRecords, newRecord]);
-    setNewWeight('');
-    setShowBMIForm(false);
   };
 
   const currentStreak = calculateStreak();
@@ -147,13 +197,13 @@ export function ProfilePage({ userName, completedWorkouts, onWorkoutComplete }: 
 
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-gradient-to-br from-orange-500 to-red-500 rounded-xl shadow-md p-6 text-white">
+        <div className="bg-gradient-to-br from-orange-500 to-red-500 rounded-xl shadow-md p-6 text-white cursor-pointer hover:opacity-90 transition-opacity" onClick={toggleTodayWorkout}>
           <div className="flex items-center justify-between mb-2">
             <Flame className="w-8 h-8" />
             <span className="text-3xl font-bold">{currentStreak}</span>
           </div>
           <h3 className="text-lg font-semibold">Day Streak</h3>
-          <p className="text-sm text-orange-100">Keep it going!</p>
+          <p className="text-sm text-orange-100">Click to log today!</p>
         </div>
 
         <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-md p-6 text-white">
@@ -318,7 +368,7 @@ export function ProfilePage({ userName, completedWorkouts, onWorkoutComplete }: 
           <div className="mt-6">
             <h4 className="font-semibold text-gray-900 mb-3">Recent Records</h4>
             <div className="space-y-2">
-              {bmiRecords.slice(-5).reverse().map((record, index) => (
+              {[...bmiRecords].reverse().slice(0, 5).map((record, index) => (
                 <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div>
                     <p className="font-medium text-gray-900">BMI: {record.bmi}</p>

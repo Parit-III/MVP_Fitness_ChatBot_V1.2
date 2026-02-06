@@ -45,12 +45,13 @@ export default function App() {
 
   // ✅ verify แล้ว → เข้าแอพได้
   return (
-    <Dashboard
-      user={{
-        name: firebaseUser.displayName ?? "User",
-        email: firebaseUser.email ?? "",
-      }}
-      onLogout={handleLogout}
-    />
-  );
+  <Dashboard
+    user={{
+      name: firebaseUser.displayName ?? "User",
+      email: firebaseUser.email ?? "",
+      uid: firebaseUser.uid, // Add this line here
+    }}
+    onLogout={handleLogout}
+  />
+);
 }
