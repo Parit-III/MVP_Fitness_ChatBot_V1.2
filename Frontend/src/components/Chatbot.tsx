@@ -26,10 +26,12 @@ export function Chatbot({ userName }: ChatbotProps) {
 
   const { user, loading } = useContext(AuthContext);
 
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [chatMessages, setChatMessages] = useState<Message[]>([]); // new
+  const [planMessages, setPlanMessages] = useState<Message[]>([]); // new
   const [inputText, setInputText] = useState("");
   const [toggled, setToggled] = useState(true);
-
+  const currentMessages = toggled ? chatMessages : planMessages; // new
+  const setCurrentMessages = toggled ? setChatMessages : setPlanMessages; // new
   const [activePlan, setActivePlan] = useState<any>(null);
   const [allPlans, setAllPlans] = useState<any[]>([]);
   const [planStep, setPlanStep] = useState(0);
@@ -47,23 +49,51 @@ export function Chatbot({ userName }: ChatbotProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+}, [currentMessages]); // new
 
   useEffect(() => {
-    if (!user) return;
-    const loadChat = async () => {
-      const snap = await getDoc(doc(db, "chats", user.uid));
-      if (snap.exists() && snap.data().messages) {
-        setMessages(snap.data().messages.map((m: any) => ({
-          ...m, timestamp: new Date(m.timestamp)
-        })));
-      } else {
-        addBotMessage(`Hi ${userName}! 👋 I'm your AI fitness assistant.`);
+  if (!user) return;
+
+  const loadChat = async () => {
+    const snap = await getDoc(doc(db, "chats", user.uid));
+
+    if (snap.exists()) {
+      const data = snap.data();
+
+      if (data.chatMessages) {
+        setChatMessages(
+          data.chatMessages.map((m: any) => ({
+            ...m,
+            timestamp: new Date(m.timestamp),
+          }))
+        );
       }
-    };
-    loadChat();
-  }, [user]);
+
+      if (data.planMessages) {
+        setPlanMessages(
+          data.planMessages.map((m: any) => ({
+            ...m,
+            timestamp: new Date(m.timestamp),
+          }))
+        );
+      }
+    } else {
+      // ยังไม่เคยมี chat → ใส่ welcome เฉพาะ Chat Mode
+      setChatMessages([
+        {
+          id: Date.now().toString(),
+          text: `Hi ${userName}! 👋 I'm your AI fitness assistant.`,
+          senderRole: "bot",
+          senderName: "FitPro AI",
+          timestamp: new Date(),
+        },
+      ]);
+    }
+  };
+
+  loadChat();
+}, [user]); // new
 
   useEffect(() => {
     if (!user) return;
@@ -101,32 +131,43 @@ export function Chatbot({ userName }: ChatbotProps) {
   }, [toggled]);
 
   const addBotMessage = (text: string) => {
-    setMessages((prev) => [...prev, {
+  setCurrentMessages(prev => [
+    ...prev,
+    {
       id: Date.now().toString(),
       text,
       senderRole: "bot",
       senderId: "bot",
       senderName: "FitPro AI",
       timestamp: new Date(),
-    }]);
-  };
+    }
+  ]);
+}; // new
+  
+  const saveChatHistory = async (
+  chatMsgs: Message[],
+  planMsgs: Message[]
+) => {
+  if (!user) return;
 
-  const saveChatHistory = async (msgs: Message[]) => {
-    if (!user) return;
-    await setDoc(doc(db, "chats", user.uid), {
-      messages: msgs.map(m => ({ ...m, timestamp: m.timestamp.getTime() })),
-      updatedAt: serverTimestamp()
-    }, { merge: true });
-  };
-
+  await setDoc(doc(db, "chats", user.uid), {
+    chatMessages: chatMsgs.map(m => ({ ...m, timestamp: m.timestamp.getTime() })),
+    planMessages: planMsgs.map(m => ({ ...m, timestamp: m.timestamp.getTime() })),
+    updatedAt: serverTimestamp()
+  }, { merge: true });
+}; // new
   const handleSendMessage = async () => {
     if (loading || !user || !inputText.trim()) return;
     const currentInput = inputText;
     const userMsg: Message = { id: Date.now().toString(), text: currentInput, senderRole: "user", senderId: user.uid, senderName: user.displayName || "User", timestamp: new Date() };
-    const newMsgs = [...messages, userMsg];
-    setMessages(newMsgs);
+
+    const newMsgs = [...currentMessages, userMsg]; // new
+    setCurrentMessages(newMsgs); // new
     setInputText("");
-    saveChatHistory(newMsgs);
+    saveChatHistory(
+      toggled ? newMsgs : chatMessages,
+      toggled ? planMessages : newMsgs
+    ); // new
 
     // setIsThinking(true);// ai กำลังคิด
     try {
@@ -138,8 +179,12 @@ export function Chatbot({ userName }: ChatbotProps) {
         });
         const data = await res.json();
         const updated = [...newMsgs, { id: Date.now().toString(), text: data.reply, senderRole: "bot", senderName: "FitPro AI", timestamp: new Date() } as Message];
-        setMessages(updated);
-        saveChatHistory(updated);
+      
+        setChatMessages(updated);
+        saveChatHistory(
+          updated,
+          planMessages
+        ); // new
         // setIsThinking(false); //ai 👈 หยุดคิด
       } else if (activePlan) {
         if (activePlan.days.length === 0) {
@@ -195,7 +240,7 @@ export function Chatbot({ userName }: ChatbotProps) {
 
       {/* This area is now flex-1 and overflow-y-auto to allow scrolling inside the fixed box */}
       <div className={`flex-1 overflow-y-auto p-6 space-y-4 ${toggled ? "bg-gray-50" : "bg-indigo-50"}`}>
-        {messages.map((m) => (
+        {currentMessages.map((m) => (
           <div key={m.id} className={`flex ${m.senderRole === "user" ? "justify-end" : "justify-start"}`}>
             <div className={`max-w-[80%] rounded-2xl px-4 py-3 ${m.senderRole === "user" ? (toggled ? "bg-indigo-600" : "bg-blue-600") + " text-white" : "bg-white shadow-md"}`}>
               {m.senderRole === "bot" && <p className="text-xs text-gray-400 mb-1">{m.senderName}</p>}
