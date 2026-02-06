@@ -1,5 +1,6 @@
 import express from "express";
 import axios from "axios";
+import { db } from "../scripts/firebaseAdmin.js";
 
 console.log("✅ ai.js loaded");
 console.log("GROQ_API_KEY =", process.env.GROQ_API_KEY);
@@ -29,58 +30,85 @@ const groq = async (messages, max_tokens = 900) => {
   return res.data.choices[0].message.content;
 };
 
+function extractJSON(text) {
+    const match = text.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error("No JSON found");
+    return JSON.parse(match[0]);
+}
+
+async function getExercisesFromDB() {
+  const snapshot = await db.collection("exercises").get();
+
+  return snapshot.docs.map(doc => {
+    const d = doc.data();
+    return {
+      id: doc.id,
+      name: d.Title,
+      bodyPart: d.BodyPart,
+      equipment: d.Equipment,
+      level: d.Level
+    };
+  });
+}
+
 /* ========================= */
 /* ===== GENERATE PLAN ===== */
 /* ========================= */
 router.post("/plan", async (req, res) => {
-  const { age, weight, height, goal, injury, time } = req.body;
+  const { age, weight, height, goal } = req.body;
 
-  const prompt = `
+  try {
+    const exercises = await getExercisesFromDB();
+
+    const exerciseList = exercises
+      .map(e => `- ${e.name} (${e.bodyPart}, ${e.level}) [id:${e.id}]`)
+      .join("\n");
+
+    const prompt = `
 You are a professional personal trainer.
-You are creating a workout plan (5 days Monday-Friday).
-STRICT RULES:
-- Make a workout plan that suit user need
-- Match exercises to the user's goal
-- If user wants to avoid a body part, replace with other muscle groups or cardio
-- Return ONLY valid JSON (Very Important)
+
+AVAILABLE EXERCISES:
+${exerciseList}
+
+RULES:
+- Use ONLY exercises from the list
+- Return ONLY JSON
+- Use exerciseId from the list
 - English only
-- No explanation text
 
-User's Information:
+User:
 - age: ${age}
-- weight: ${weight} kg
-- height: ${height} cm
+- weight: ${weight}
+- height: ${height}
 - goal: ${goal}
-- injury: ${injury || "None"}
-- free time: ${time} minute/day
 
-OUTPUT FORMAT EXACTLY JSON:
+OUTPUT FORMAT:
 {
   "days": [
     {
       "day": "Day 1",
       "exercises": [
-        { "name": "Squat", "sets": 3, "reps": 12 }
+        { "exerciseId": "abc123", "sets": 3, "reps": 12 }
       ]
     }
   ]
 }
 `;
 
-  try {
     const content = await groq([
-      { role: "system", content: "คุณเป็นเทรนเนอร์ฟิตเนสระดับมืออาชีพ" },
+      { role: "system", content: "Workout plan generator (JSON only)" },
       { role: "user", content: prompt }
     ]);
 
-    const plan = JSON.parse(content);
+    const plan = extractJSON(content);
     res.json({ plan });
 
   } catch (err) {
-    console.error(err.message);
+    console.error(err);
     res.status(500).json({ error: "Plan generation failed" });
   }
 });
+
 
 /* ===================== */
 /* ===== CHAT ======== */
@@ -108,7 +136,7 @@ Rules:
 `
       },
       ...(messages || [])
-    ], 300);
+    ], 1500);
 
     res.json({ reply });
 
@@ -126,7 +154,13 @@ Rules:
 /* ===== UPDATE PLAN ======= */
 /* ========================= */
 router.post("/update-plan", async (req, res) => {
+  try {
   const { currentPlan, instruction } = req.body;
+  const exercises = await getExercisesFromDB();
+  const exerciseList = exercises
+    .map(e => `- ${e.name} (${e.bodyPart}, ${e.level}) [id:${e.id}]`)
+    .join("\n");
+
 
   const prompt = `
 You are updating a workout plan.
@@ -154,20 +188,25 @@ OUTPUT FORMAT EXACTLY:
     {
       "day": "Day 1",
       "exercises": [
-        { "name": "Exercise", "sets": 3, "reps": 12 }
+        { "exerciseId": "abc123", "sets": 3, "reps": 12 }
       ]
     }
   ]
 }
+AVAILABLE EXERCISES:
+${exerciseList}
+
+RULE:
+- Use ONLY exerciseId from the list
 `;
 
-  try {
+  
     const content = await groq([
       { role: "system", content: "Workout plan editor (JSON only)" },
       { role: "user", content: prompt }
     ]);
 
-    const plan = JSON.parse(content);
+    const plan = extractJSON(content);
     res.json({ plan });
   } catch (err) {
     console.error("UPDATE ERROR:", err.message);

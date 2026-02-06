@@ -1,7 +1,8 @@
+import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
 import aiRoute from "./routes/ai.js";
+import planRoutes from "./routes/plans.js";
 
 dotenv.config();
 
@@ -20,6 +21,8 @@ app.use(express.json());
 
 // ✅ AI (chat / plan / update-plan)
 app.use("/api/ai", aiRoute);
+
+app.use("/api/plans", planRoutes);
 
 app.listen(PORT, () => {
   console.log(`✅ Backend running on http://localhost:${PORT}`);

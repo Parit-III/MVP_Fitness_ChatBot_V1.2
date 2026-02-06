@@ -10,28 +10,41 @@
   Run `npm run dev` to start the development server.
   
 
+
 ```
 MVP_Fitness_ChatBot_V1.2
 ├─ Backend
+│  ├─ .env
 │  ├─ package-lock.json
 │  ├─ package.json
 │  ├─ routes
 │  │  └─ ai.js
+│  ├─ scripts
+│  │  ├─ embedExercises.js
+│  │  └─ firebaseAdmin.js
 │  └─ server.js
 ├─ Frontend
+│  ├─ .env
 │  ├─ build
 │  │  ├─ assets
 │  │  │  ├─ index-CNomaQlj.css
 │  │  │  └─ index-CVwTmMS-.js
 │  │  └─ index.html
+│  ├─ data
+│  │  ├─ Exe.json
+│  │  └─ GymBroButJson.json
 │  ├─ dist
 │  │  ├─ assets
-│  │  │  ├─ index-CNomaQlj.css
-│  │  │  └─ index-NG9lUaHv.js
+│  │  │  ├─ index-BhjYWUQK.js
+│  │  │  └─ index-CNomaQlj.css
 │  │  └─ index.html
 │  ├─ index.html
 │  ├─ package-lock.json
 │  ├─ package.json
+│  ├─ scripts
+│  │  ├─ embedExercises.js
+│  │  ├─ firebaseNode.ts
+│  │  └─ seedExercises.ts
 │  ├─ src
 │  │  ├─ App.tsx
 │  │  ├─ Attributions.md
@@ -48,6 +61,7 @@ MVP_Fitness_ChatBot_V1.2
 │  │  │  ├─ figma
 │  │  │  │  └─ ImageWithFallback.tsx
 │  │  │  ├─ ManagePlanExercisesModal.tsx
+│  │  │  ├─ PlanForm.tsx
 │  │  │  ├─ ProfilePage.tsx
 │  │  │  ├─ SelectExercisesModal.tsx
 │  │  │  ├─ ui
@@ -99,6 +113,7 @@ MVP_Fitness_ChatBot_V1.2
 │  │  │  │  ├─ tooltip.tsx
 │  │  │  │  ├─ use-mobile.ts
 │  │  │  │  └─ utils.ts
+│  │  │  ├─ VerifyEmail.tsx
 │  │  │  └─ WorkoutLibrary.tsx
 │  │  ├─ firebase.ts
 │  │  ├─ guidelines
@@ -110,6 +125,8 @@ MVP_Fitness_ChatBot_V1.2
 │  │  ├─ pages
 │  │  │  └─ Dashboard.tsx
 │  │  ├─ services
+│  │  │  ├─ exerciseService.ts
+│  │  │  ├─ planService.ts
 │  │  │  └─ userService.ts
 │  │  ├─ styles
 │  │  │  └─ globals.css
