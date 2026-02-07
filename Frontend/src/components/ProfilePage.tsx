@@ -144,26 +144,35 @@ export function ProfilePage({ userId, userName }: ProfilePageProps) {
     return streak;
   };
 
-  const getCalendarDays = () => {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = today.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const days: Array<{ date: Date; hasWorkout: boolean; isToday: boolean }> = [];
-    const startDay = firstDay.getDay();
-    for (let i = 0; i < startDay; i++) {
-      days.push({ date: new Date(0), hasWorkout: false, isToday: false });
-    }
-    for (let day = 1; day <= lastDay.getDate(); day++) {
-      const date = new Date(year, month, day);
-      const dateStr = date.toISOString().split('T')[0];
-      const hasWorkout = completedWorkouts.some(w => w.date === dateStr && w.completed);
-      const isToday = date.toDateString() === today.toDateString();
-      days.push({ date, hasWorkout, isToday });
-    }
-    return days;
-  };
+  // แก้ไขฟังก์ชัน getCalendarDays ใน ProfilePage.tsx ให้แม่นยำขึ้น
+const getCalendarDays = () => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth();
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  
+  const days = [];
+  const startDay = firstDay.getDay();
+
+  for (let i = 0; i < startDay; i++) {
+    days.push({ date: new Date(0), hasWorkout: false, isToday: false });
+  }
+
+  for (let day = 1; day <= lastDay.getDate(); day++) {
+    const date = new Date(year, month, day);
+    
+    // ✅ ใช้สูตรแปลง Local Date เป็น ISO String แบบเดียวกัน
+    const offset = date.getTimezoneOffset() * 60000;
+    const dateStr = (new Date(date.getTime() - offset)).toISOString().split('T')[0];
+    
+    const hasWorkout = completedWorkouts.some(w => w.date === dateStr && w.completed);
+    const isToday = date.toDateString() === today.toDateString();
+    
+    days.push({ date, hasWorkout, isToday });
+  }
+  return days;
+};
 
   const calculateWorkoutFrequency = () => {
     const last30Days = completedWorkouts.filter(w => {

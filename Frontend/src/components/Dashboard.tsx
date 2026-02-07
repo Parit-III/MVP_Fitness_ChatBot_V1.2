@@ -6,12 +6,9 @@ import { ProfilePage } from './ProfilePage';
 import { Exercise } from './ExercisePlans';
 import { getExercises } from "../services/exerciseService";
 import { WorkoutLibrary } from "./WorkoutLibrary";
-<<<<<<< HEAD
 import { ExerciseDetail } from "./ExerciseDetail";
-=======
 import { doc, getDoc, setDoc, serverTimestamp, onSnapshot } from "firebase/firestore";
 import { db } from "../firebase";
->>>>>>> b3412f7b81e228779c27a1862f675e5c82137629
 
 interface DashboardProps {
   user: { name: string; email: string; uid: string};
@@ -29,13 +26,7 @@ export function Dashboard({ user, onLogout }: DashboardProps) {
 
   const [view, setView] = useState<'chat' | 'plans' | 'profile' | 'workouts' | 'exercise'>('chat');
 
-  const [completedWorkouts, setCompletedWorkouts] = useState<WorkoutStreak[]>([
-    { date: '2024-01-20', completed: true },
-    { date: '2024-01-21', completed: true },
-    { date: '2024-01-22', completed: true },
-    { date: '2024-01-23', completed: true },
-    { date: '2024-01-24', completed: true },
-  ]);
+const [completedWorkouts, setCompletedWorkouts] = useState<WorkoutStreak[]>([]);
 
   // Exercise library
 const [exerciseLibrary, setExerciseLibrary] = useState<Exercise[]>([]);
@@ -51,22 +42,6 @@ useEffect(() => {
 
   fetchExercises();
 }, []);
-
-<<<<<<< HEAD
-  const handleWorkoutComplete = (date: string) => {
-    setCompletedWorkouts(prev => {
-      const existing = prev.find(w => w.date === date);
-      if (existing) {
-        return prev.map(w => w.date === date ? { ...w, completed: true } : w);
-      }
-      return [...prev, { date, completed: true }];
-    });
-  };
-=======
-
-  const handlePlanCreated = (plan: ExercisePlan) => {
-    setPersonalizedPlans(prev => [...prev, plan]);
-  };
 
   // Inside Dashboard.tsx
 const handleWorkoutComplete = async (date: string) => {
@@ -84,7 +59,6 @@ const handleWorkoutComplete = async (date: string) => {
     console.error("Error saving workout:", error);
   }
 };
->>>>>>> b3412f7b81e228779c27a1862f675e5c82137629
 
   const handleUpdateExercise = (exercise: Exercise) => {
     setExerciseLibrary(prev =>
@@ -188,24 +162,34 @@ const handleWorkoutComplete = async (date: string) => {
           </div>
         ) : view === 'plans' ? (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-            <ExercisePlans
-              availableExercises={exerciseLibrary}
-              onStartExercise={(exerciseFromPlan, planName) => {
+            // ใน Dashboard.tsx
+<ExercisePlans
+  availableExercises={exerciseLibrary}
+  onStartExercise={(exerciseFromPlan, planName) => {
+    // ค้นหาข้อมูลท่าออกกำลังกายตัวเต็มจาก Library
+    const fullExercise = exerciseLibrary.find(
+      ex => ex.name === exerciseFromPlan.name
+    );
 
-                const fullExercise = exerciseLibrary.find(
-                  ex => ex.name === exerciseFromPlan.name
-                );
-
-                if (!fullExercise) {
-                  console.error("Exercise not found in library:", exerciseFromPlan);
-                  return;
-                }
-
-                setSelectedExercise(fullExercise);
-                setSelectedPlanName(planName);
-                setView('exercise');
-              }}
-            />
+    if (fullExercise) {
+      setSelectedExercise(fullExercise);
+      setSelectedPlanName(planName);
+      setView('exercise');
+    } else {
+      // ถ้าหาไม่เจอ ให้ใช้ข้อมูลเท่าที่มีจาก Plan ไปก่อนเพื่อไม่ให้ name เป็น undefined
+      setSelectedExercise({
+        ...exerciseFromPlan,
+        id: exerciseFromPlan.id || Date.now().toString(),
+        description: exerciseFromPlan.description || "",
+        instructions: exerciseFromPlan.instructions || [],
+        tips: exerciseFromPlan.tips || [],
+        calories: exerciseFromPlan.calories || 0
+      } as Exercise);
+      setSelectedPlanName(planName);
+      setView('exercise');
+    }
+  }}
+/>
 
           </div>
         ) : view === 'profile' ? (
@@ -218,10 +202,18 @@ const handleWorkoutComplete = async (date: string) => {
         )  : view === 'exercise' ? (
           <div className="max-w-4xl mx-auto px-4 py-8 w-full">
             {selectedExercise && (
-              <ExerciseDetail
+              <ExerciseDetail 
                 exercise={selectedExercise}
-                planName={selectedPlanName}
-                onBack={() => setView('plans')}
+                planName={selectedPlanName} // ✅ แก้จาก selectedPlan.name เป็น selectedPlanName
+                userId={user.uid}
+                onBack={() => {
+                  setSelectedExercise(null);
+                  setView('plans'); // เมื่อกด Back ให้กลับไปหน้าแผนงาน
+                }}
+                onComplete={() => {
+                  // เพิ่มเติม: เมื่อกดเสร็จสิ้น อาจจะให้กลับไปหน้า Profile เพื่อดู Streak
+                  setView('profile');
+                }}
               />
 
             )}
