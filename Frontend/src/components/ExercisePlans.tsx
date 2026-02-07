@@ -39,10 +39,12 @@ export interface ExercisePlan {
 ======================= */
 
 export function ExercisePlans({
-  plans,
   availableExercises,
-  ...props
-}: any) {
+  onStartExercise,
+}: {
+  availableExercises?: Exercise[];
+  onStartExercise?: (exercise: Exercise, planName: string) => void;
+}) {
   const { user } = useContext(AuthContext);
 
   const [bigPlans, setBigPlans] = useState<ExercisePlan[]>([]);
