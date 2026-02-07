@@ -217,7 +217,7 @@ export function Chatbot({ userName }: ChatbotProps) {
 
   return (
     // Added h-[700px] and flex-col to keep it contained
-    <div className="flex flex-col h-[700px] bg-white rounded-2xl shadow-xl overflow-hidden">
+    <div className="flex flex-col h-[calc(100vh-120px)] bg-white rounded-2xl shadow-xl overflow-hidden">
       <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6 flex items-center gap-3 shrink-0">
         <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center">
           <Bot className="w-7 h-7 text-indigo-600" />
