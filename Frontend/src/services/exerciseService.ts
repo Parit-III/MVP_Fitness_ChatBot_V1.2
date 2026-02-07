@@ -10,19 +10,26 @@ export async function getExercises(): Promise<Exercise[]> {
 
     return {
       id: doc.id,
-      name: data.Title,
-      sets: 3,                 // default ไปก่อน
-      reps: "8-12",             // default
-      calories: 60,             // default
-      description: data.Desc,
+      name: data.title ?? "Unknown Exercise",
+      sets: 3,
+      reps: "8-12",
+      calories: 60,
+      description: extractDescription(data.text),
       instructions: [
-        `Body part: ${data.BodyPart}`,
-        `Equipment: ${data.Equipment}`
+        `Body part: ${data.bodyPart ?? "N/A"}`,
+        `Equipment: ${data.equipment ?? "N/A"}`
       ],
       tips: [
-        `Level: ${data.Level}`,
-        `Type: ${data.Type}`
+        `Level: ${data.level ?? "N/A"}`,
+        `Type: ${data.type ?? "Strength"}` // fallback สมเหตุสมผล
       ]
     };
   });
 }
+function extractDescription(text?: string): string {
+  if (!text) return "";
+
+  const match = text.match(/Description:\s*(.*?)\s*(Type:|Body Part:|Equipment:|Level:|$)/i);
+  return match ? match[1].trim() : "";
+}
+
