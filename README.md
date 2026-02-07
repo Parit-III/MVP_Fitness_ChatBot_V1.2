@@ -13,25 +13,40 @@
 ```
 MVP_Fitness_ChatBot_V1.2
 ├─ Backend
+│  ├─ .env
 │  ├─ package-lock.json
 │  ├─ package.json
 │  ├─ routes
-│  │  └─ ai.js
+│  │  ├─ ai.js
+│  │  └─ getRelevantContext.js
+│  ├─ scripts
+│  │  ├─ embedExercises.js
+│  │  └─ firebaseAdmin.js
 │  └─ server.js
 ├─ Frontend
+│  ├─ .env
 │  ├─ build
 │  │  ├─ assets
 │  │  │  ├─ index-CNomaQlj.css
 │  │  │  └─ index-CVwTmMS-.js
 │  │  └─ index.html
+│  ├─ data
+│  │  ├─ Exe.json
+│  │  ├─ exercises_with_vectors.json
+│  │  └─ GymBroButJson.json
 │  ├─ dist
 │  │  ├─ assets
-│  │  │  ├─ index-CNomaQlj.css
-│  │  │  └─ index-NG9lUaHv.js
+│  │  │  ├─ index-BhjYWUQK.js
+│  │  │  └─ index-CNomaQlj.css
 │  │  └─ index.html
 │  ├─ index.html
 │  ├─ package-lock.json
 │  ├─ package.json
+│  ├─ scripts
+│  │  ├─ embeder.py
+│  │  ├─ embedExercises.js
+│  │  ├─ firebaseNode.ts
+│  │  └─ seedExercises.ts
 │  ├─ src
 │  │  ├─ App.tsx
 │  │  ├─ Attributions.md
@@ -41,15 +56,12 @@ MVP_Fitness_ChatBot_V1.2
 │  │  │  ├─ Chatbot.tsx
 │  │  │  ├─ Dashboard.tsx
 │  │  │  ├─ EditExerciseModal.tsx
-│  │  │  ├─ EditPlanModal.tsx
 │  │  │  ├─ ExerciseDetail.tsx
 │  │  │  ├─ ExerciseDetailModal.tsx
 │  │  │  ├─ ExercisePlans.tsx
 │  │  │  ├─ figma
 │  │  │  │  └─ ImageWithFallback.tsx
-│  │  │  ├─ ManagePlanExercisesModal.tsx
 │  │  │  ├─ ProfilePage.tsx
-│  │  │  ├─ SelectExercisesModal.tsx
 │  │  │  ├─ ui
 │  │  │  │  ├─ accordion.tsx
 │  │  │  │  ├─ alert-dialog.tsx
@@ -99,6 +111,7 @@ MVP_Fitness_ChatBot_V1.2
 │  │  │  │  ├─ tooltip.tsx
 │  │  │  │  ├─ use-mobile.ts
 │  │  │  │  └─ utils.ts
+│  │  │  ├─ VerifyEmail.tsx
 │  │  │  └─ WorkoutLibrary.tsx
 │  │  ├─ firebase.ts
 │  │  ├─ guidelines
@@ -110,11 +123,14 @@ MVP_Fitness_ChatBot_V1.2
 │  │  ├─ pages
 │  │  │  └─ Dashboard.tsx
 │  │  ├─ services
+│  │  │  ├─ exerciseService.ts
+│  │  │  ├─ planService.ts
 │  │  │  └─ userService.ts
 │  │  ├─ styles
 │  │  │  └─ globals.css
 │  │  └─ vite-env.d.ts
 │  └─ vite.config.ts
+├─ package-lock.json
 └─ README.md
 
 ```

@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { MessageCircle, Dumbbell, LogOut, X, List, User, BookOpen } from 'lucide-react';
-import { ExercisePlans, ExercisePlan } from './ExercisePlans';
+import { ExercisePlans } from './ExercisePlans';
 import { Chatbot } from './Chatbot';
 import { ProfilePage } from './ProfilePage';
 import { Exercise } from './ExercisePlans';
 import { getExercises } from "../services/exerciseService";
 import { WorkoutLibrary } from "./WorkoutLibrary";
+import { ExerciseDetail } from "./ExerciseDetail";
 import { doc, getDoc, setDoc, serverTimestamp, onSnapshot } from "firebase/firestore";
 import { db } from "../firebase";
 
@@ -20,15 +21,12 @@ interface WorkoutStreak {
 }
 
 export function Dashboard({ user, onLogout }: DashboardProps) {
-  const [view, setView] = useState<'chat' | 'plans' | 'profile' | 'workouts'>('chat');
-  const [personalizedPlans, setPersonalizedPlans] = useState<ExercisePlan[]>([]);
-  const [completedWorkouts, setCompletedWorkouts] = useState<WorkoutStreak[]>([
-    { date: '2024-01-20', completed: true },
-    { date: '2024-01-21', completed: true },
-    { date: '2024-01-22', completed: true },
-    { date: '2024-01-23', completed: true },
-    { date: '2024-01-24', completed: true },
-  ]);
+  const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
+  const [selectedPlanName, setSelectedPlanName] = useState<string>("");
+
+  const [view, setView] = useState<'chat' | 'plans' | 'profile' | 'workouts' | 'exercise'>('chat');
+
+const [completedWorkouts, setCompletedWorkouts] = useState<WorkoutStreak[]>([]);
 
   // Exercise library
 const [exerciseLibrary, setExerciseLibrary] = useState<Exercise[]>([]);
@@ -44,11 +42,6 @@ useEffect(() => {
 
   fetchExercises();
 }, []);
-
-
-  const handlePlanCreated = (plan: ExercisePlan) => {
-    setPersonalizedPlans(prev => [...prev, plan]);
-  };
 
   // Inside Dashboard.tsx
 const handleWorkoutComplete = async (date: string) => {
@@ -66,22 +59,6 @@ const handleWorkoutComplete = async (date: string) => {
     console.error("Error saving workout:", error);
   }
 };
-
-  const handleUpdatePlan = (updatedPlan: ExercisePlan) => {
-    setPersonalizedPlans(prev =>
-      prev.map(p => p.id === updatedPlan.id ? updatedPlan : p)
-    );
-  };
-
-  const handleDeletePlan = (planId: string) => {
-    setPersonalizedPlans(prev => prev.filter(p => p.id !== planId));
-  };
-
-  const handlePinPlan = (planId: string) => {
-    setPersonalizedPlans(prev =>
-      prev.map(p => p.id === planId ? { ...p, isPinned: !p.isPinned } : p)
-    );
-  };
 
   const handleUpdateExercise = (exercise: Exercise) => {
     setExerciseLibrary(prev =>
@@ -185,14 +162,35 @@ const handleWorkoutComplete = async (date: string) => {
           </div>
         ) : view === 'plans' ? (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-            <ExercisePlans 
-              plans={personalizedPlans}
-              availableExercises={exerciseLibrary}
-              onWorkoutComplete={handleWorkoutComplete}
-              onUpdatePlan={handleUpdatePlan}
-              onDeletePlan={handleDeletePlan}
-              onPinPlan={handlePinPlan}
-            />
+            // ใน Dashboard.tsx
+<ExercisePlans
+  availableExercises={exerciseLibrary}
+  onStartExercise={(exerciseFromPlan, planName) => {
+    // ค้นหาข้อมูลท่าออกกำลังกายตัวเต็มจาก Library
+    const fullExercise = exerciseLibrary.find(
+      ex => ex.name === exerciseFromPlan.name
+    );
+
+    if (fullExercise) {
+      setSelectedExercise(fullExercise);
+      setSelectedPlanName(planName);
+      setView('exercise');
+    } else {
+      // ถ้าหาไม่เจอ ให้ใช้ข้อมูลเท่าที่มีจาก Plan ไปก่อนเพื่อไม่ให้ name เป็น undefined
+      setSelectedExercise({
+        ...exerciseFromPlan,
+        id: exerciseFromPlan.id || Date.now().toString(),
+        description: exerciseFromPlan.description || "",
+        instructions: exerciseFromPlan.instructions || [],
+        tips: exerciseFromPlan.tips || [],
+        calories: exerciseFromPlan.calories || 0
+      } as Exercise);
+      setSelectedPlanName(planName);
+      setView('exercise');
+    }
+  }}
+/>
+
           </div>
         ) : view === 'profile' ? (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
@@ -201,6 +199,26 @@ const handleWorkoutComplete = async (date: string) => {
               userName={user.name}
             />
           </div>
+        )  : view === 'exercise' ? (
+          <div className="max-w-4xl mx-auto px-4 py-8 w-full">
+            {selectedExercise && (
+              <ExerciseDetail 
+                exercise={selectedExercise}
+                planName={selectedPlanName} // ✅ แก้จาก selectedPlan.name เป็น selectedPlanName
+                userId={user.uid}
+                onBack={() => {
+                  setSelectedExercise(null);
+                  setView('plans'); // เมื่อกด Back ให้กลับไปหน้าแผนงาน
+                }}
+                onComplete={() => {
+                  // เพิ่มเติม: เมื่อกดเสร็จสิ้น อาจจะให้กลับไปหน้า Profile เพื่อดู Streak
+                  setView('profile');
+                }}
+              />
+
+            )}
+          </div>
+
         ) : (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
             <WorkoutLibrary
@@ -210,7 +228,9 @@ const handleWorkoutComplete = async (date: string) => {
               onAddExercise={handleAddExercise}
             />
           </div>
-        )}
+        )
+        
+        }
       </main>
     </div>
   );

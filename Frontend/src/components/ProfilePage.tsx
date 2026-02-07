@@ -145,7 +145,8 @@ export function ProfilePage({ userId, userName }: ProfilePageProps) {
     return streak;
   };
 
-  const getCalendarDays = () => {
+  // แก้ไขฟังก์ชัน getCalendarDays ใน ProfilePage.tsx ให้แม่นยำขึ้น
+const getCalendarDays = () => {
   const today = new Date();
   const year = today.getFullYear();
   const month = today.getMonth();

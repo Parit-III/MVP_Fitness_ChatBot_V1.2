@@ -1,15 +1,23 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Flame, Repeat, Clock, Play, Pause, RotateCcw } from 'lucide-react';
 import { Exercise } from './ExercisePlans';
+import { db } from '../firebase'; 
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 interface ExerciseDetailProps {
   exercise: Exercise;
   planName: string;
   onBack: () => void;
   onComplete?: () => void;
+  userId: string; // ✅ เพิ่ม userId เข้ามาใน Props
 }
 
-export function ExerciseDetail({ exercise, planName, onBack, onComplete }: ExerciseDetailProps) {
+export function ExerciseDetail({ exercise, planName, onBack, onComplete, userId }: ExerciseDetailProps) {
+  // ✅ ใส่ตรงนี้เลย
+  if (!exercise) {
+    return <div className="p-8">Exercise not found</div>;
+  }
+
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [currentSet, setCurrentSet] = useState(1);
   const [isCompleted, setIsCompleted] = useState(false);
@@ -30,7 +38,7 @@ export function ExerciseDetail({ exercise, planName, onBack, onComplete }: Exerc
     const match = reps.match(/(\d+)/);
     if (!match) return 60; // default 60 seconds
     const repCount = parseInt(match[1]);
-    return Math.max(repCount * 3, 30); // 3 seconds per rep, minimum 30 seconds
+    return Math.max(repCount * 0, 0); // 3 seconds per rep, minimum 30 seconds 3, 30
   };
 
   const setDurationSeconds = hasTimedSets 
@@ -88,13 +96,37 @@ export function ExerciseDetail({ exercise, planName, onBack, onComplete }: Exerc
     }
   };
 
-  const handleMarkComplete = () => {
-    // Here you could add logic to save completion status
-    if (onComplete) {
-      onComplete();
+// ในไฟล์ ExerciseDetail.tsx
+const handleMarkComplete = async () => {
+    if (!userId || !exercise?.name) {
+      console.error("Missing Data:", { userId, exerciseName: exercise?.name });
+      alert("ไม่สามารถบันทึกได้เนื่องจากข้อมูลไม่สมบูรณ์");
+      return;
     }
-    onBack();
-  };
+
+    try {
+      const todayStr = new Date().toISOString().split('T')[0];
+      
+      // ✅ เปลี่ยน Path ให้ตรงกับ Rules: /workouts/{userId}/records/{todayStr}
+      const workoutRef = doc(db, 'workouts', userId, 'records', todayStr);
+      
+      await setDoc(workoutRef, {
+        completed: true,
+        timestamp: serverTimestamp(),
+        exerciseName: exercise.name, // ใช้ชื่อ Field ให้ตรงกับความหมาย
+        planName: planName
+      }, { merge: true });
+      
+      console.log("Workout saved to /workouts sub-collection!");
+
+      if (onComplete) onComplete();
+      onBack();
+      
+    } catch (error: any) {
+      console.error("Firestore Error:", error);
+      alert(`ไม่สามารถบันทึกได้: ${error.message}`);
+    }
+};
 
   // Check if current set is complete
   const isSetComplete = timeRemaining === 0;
