@@ -21,6 +21,10 @@ app.use(express.json());
 // ✅ AI (chat / plan / update-plan)
 app.use("/api/ai", aiRoute);
 
+app.get("/ping", (req, res) => {
+  res.status(200).send("pong");
+});
+
 app.listen(PORT, () => {
   console.log(`✅ Backend running on http://localhost:${PORT}`);
 });
