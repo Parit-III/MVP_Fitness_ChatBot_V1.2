@@ -1,9 +1,13 @@
 import "dotenv/config";
 import express from "express";
 import axios from "axios";
+import similarity from 'compute-cosine-similarity';
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
 console.log("✅ ai.js loaded");
-console.log("GROQ_API_KEY =", process.env.GROQ_API_KEY);
+//console.log("GROQ_API_KEY =", process.env.GROQ_API_KEY);
 
 
 const router = express.Router();
@@ -30,52 +34,96 @@ const groq = async (messages, max_tokens = 900) => {
   return res.data.choices[0].message.content;
 };
 
+const embedText = async (text) => {
+  try {
+    const response = await axios.post("http://localhost:5001/embed", { text });
+    return response.data.vector; 
+  } catch (err) {
+    console.error("❌ Python Service Error: Is embed_service.py running on port 5001?");
+    throw new Error("Embedding service offline");
+  }
+};
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const exercisesPath = path.join(__dirname, "../data/Exe.json"); // Adjust path if needed
+const exercisesData = JSON.parse(fs.readFileSync(exercisesPath, "utf8"));
+
+const findSimilarExercisesLocal = async (queryVector, limit = 5) => {
+  // We use the data already loaded in memory
+  return exercisesData
+    .filter(ex => ex.embedding && Array.isArray(ex.embedding)) // Ensure they have vectors
+    .map(ex => ({
+      ...ex,
+      score: similarity(queryVector, ex.embedding) || 0
+    }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, limit);
+};
+
 /* ========================= */
 /* ===== GENERATE PLAN ===== */
 /* ========================= */
 router.post("/plan", async (req, res) => {
-  const { age, weight, height, goal, injury, time } = req.body;
+  console.log("📩 /plan called");
+  const { age, weight, height, goal, injury, time, pref } = req.body;
 
-  //const topExercises = getRelevantContext(userGoalVector, 3);
+  try{
+    // 1. Get vector for user's goal + preference
+    const userVector = await embedText(`${goal} ${pref}`);
+    
+    // 2. Find matching exercises from YOUR Firestore
+    const topExercises = await findSimilarExercisesLocal(userVector);
+    
+    // 3. Format matches for the AI context
+    const contextText = topExercises.map(ex => 
+    `---
+    Exercise: ${ex.Title}
+    Focus: ${ex.BodyPart} (${ex.Type})
+    Equipment: ${ex.Equipment}
+    Level: ${ex.Level}
+    Description: ${ex.Desc}`
+    ).join("\n\n");
 
-  // const contextText = topExercises.map(ex => 
-  //   `- ${ex.Title}: ${ex.Desc} (Equipment: ${ex.Equipment})`
-  // ).join("\n");
+    console.log("--- DEBUG: RAG CONTEXT START ---");
+    console.log(contextText || "⚠️ No matching exercises found!");
+    console.log("--- DEBUG: RAG CONTEXT END ---");
+    const prompt = `
+  You are a professional personal trainer.
+  You are creating a workout plan (5 days Monday-Friday).
+  STRICT RULES:
+  - Make a workout plan that suit user needs
+  - Match exercises to the user's goal
+  - If user wants to avoid a body part, replace with other muscle groups or cardio
+  - Return ONLY valid JSON (Very Important)
+  - English only
+  - No explanation text
+  - Only use Exercise from following list
 
-  //-Use the following high-quality exercise data to build the plan:${contextText}
-  const prompt = `
-You are a professional personal trainer.
-You are creating a workout plan (5 days Monday-Friday).
-STRICT RULES:
-- Make a workout plan that suit user need
-- Match exercises to the user's goal
-- If user wants to avoid a body part, replace with other muscle groups or cardio
-- Return ONLY valid JSON (Very Important)
-- English only
-- No explanation text
+  Exercise List:
+  ${contextText}
 
-User's Information:
-- age: ${age}
-- weight: ${weight} kg
-- height: ${height} cm
-- goal: ${goal}
-- injury: ${injury || "None"}
-- free time: ${time} minute/day
+  User's Information:
+  - age: ${age}
+  - weight: ${weight} kg
+  - height: ${height} cm
+  - goal: ${goal}
+  - injury: ${injury || "None"}
+  - free time: ${time} minute/day
 
-OUTPUT FORMAT EXACTLY JSON:
-{
-  "days": [
-    {
-      "day": "Day 1",
-      "exercises": [
-        { "name": "Squat", "sets": 3, "reps": 12 }
-      ]
-    }
-  ]
-}
-`;
+  OUTPUT FORMAT EXACTLY JSON:
+  {
+    "days": [
+      {
+        "day": "Day 1",
+        "exercises": [
+          { "name": "Squat", "sets": 3, "reps": 12 }
+        ]
+      }
+    ]
+  }
+  `;
 
-  try {
     const content = await groq([
       { role: "system", content: "คุณเป็นเทรนเนอร์ฟิตเนสระดับมืออาชีพ" },
       { role: "user", content: prompt }

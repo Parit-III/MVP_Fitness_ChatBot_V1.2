@@ -35,7 +35,7 @@ export function Chatbot({ userName }: ChatbotProps) {
   const [activePlan, setActivePlan] = useState<any>(null);
   const [allPlans, setAllPlans] = useState<any[]>([]);
   const [planStep, setPlanStep] = useState(0);
-  const [formData, setFormData] = useState({ age: "", weight: "", height: "", goal: "", injury: "", time: "" });
+  const [formData, setFormData] = useState({ age: "", weight: "", height: "", goal: "", injury: "", time: "", pref:""});
 
   const questions = [
     "What is your age?",
@@ -43,7 +43,8 @@ export function Chatbot({ userName }: ChatbotProps) {
     "What is your height (cm)?",
     "What is your fitness goal (e.g., lose weight, build muscle)?",
     "Do you have any injuries? (Type 'none' if not)",
-    "How many minutes per day can you exercise?"
+    "How many minutes per day can you exercise?",
+    "Additional Preference?"
   ];
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -157,63 +158,131 @@ export function Chatbot({ userName }: ChatbotProps) {
   }, { merge: true });
 }; // new
   const handleSendMessage = async () => {
-    if (loading || !user || !inputText.trim()) return;
-    const currentInput = inputText;
-    const userMsg: Message = { id: Date.now().toString(), text: currentInput, senderRole: "user", senderId: user.uid, senderName: user.displayName || "User", timestamp: new Date() };
+  if (loading || !user || !inputText.trim()) return;
+  
+  const currentInput = inputText.trim();
+  
+  // --- 1. VALIDATION LOGIC FOR PLAN MODE ---
+  if (!toggled && activePlan && activePlan.days.length === 0) {
+    let isValid = true;
+    let errorMsg = "";
 
-    const newMsgs = [...currentMessages, userMsg]; // new
-    setCurrentMessages(newMsgs); // new
-    setInputText("");
-    saveChatHistory(
-      toggled ? newMsgs : chatMessages,
-      toggled ? planMessages : newMsgs
-    ); // new
+    switch (planStep) {
+      case 0: // Age
+        const age = parseInt(currentInput);
+        if (isNaN(age) || age < 10 || age > 100) {
+          isValid = false;
+          errorMsg = "Please enter a valid age (10-100).";
+        }
+        break;
+      case 1: // Weight
+      case 2: // Height
+        const val = parseFloat(currentInput);
+        if (isNaN(val) || val <= 0) {
+          isValid = false;
+          errorMsg = "Please enter a valid positive number.";
+        }
+        break;
+      case 3: // Goal
+      case 6: // Preference
+        if (currentInput.length < 3) {
+          isValid = false;
+          errorMsg = "Please be a bit more descriptive.";
+        }
+        break;
+      case 5: // Time
+        const mins = parseInt(currentInput);
+        if (isNaN(mins) || mins < 5 || mins > 300) {
+          isValid = false;
+          errorMsg = "Please enter minutes between 5 and 300.";
+        }
+        break;
+    }
 
-    // setIsThinking(true);// ai กำลังคิด
-    try {
-      if (toggled) {
-        const res = await fetch(CHAT_API_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ messages: newMsgs.map(m => ({ role: m.senderRole === "user" ? "user" : "assistant", content: m.text }))})
-        });
-        const data = await res.json();
-        const updated = [...newMsgs, { id: Date.now().toString(), text: data.reply, senderRole: "bot", senderName: "FitPro AI", timestamp: new Date() } as Message];
-      
-        setChatMessages(updated);
-        saveChatHistory(
-          updated,
-          planMessages
-        ); // new
-        // setIsThinking(false); //ai 👈 หยุดคิด
-      } else if (activePlan) {
-        if (activePlan.days.length === 0) {
-          const fieldNames = ["age", "weight", "height", "goal", "injury", "time"];
-          const updatedFormData = { ...formData, [fieldNames[planStep]]: currentInput };
-          setFormData(updatedFormData);
-          if (planStep < questions.length - 1) {
-            addBotMessage(questions[planStep + 1]);
-            setPlanStep(planStep + 1);
-          } else {
-            addBotMessage("Calculating... 🏋️‍♂️");
-            const res = await fetch(PLAN_GEN_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(updatedFormData) });
-            const result = await res.json();
-            const updated = allPlans.map(p => p.id === activePlan.id ? { ...p, days: result.plan.days } : p);
-            await setDoc(doc(db, "userPlans", user.uid), { plans: updated }, { merge: true });
-            addBotMessage(`"${activePlan.name}" is ready.`);
-            setPlanStep(0);
-          }
+    if (!isValid) {
+      addBotMessage(`⚠️ ${errorMsg}`);
+      return; // Stop execution here
+    }
+  }
+
+  // --- 2. PREPARE MESSAGES ---
+  const userMsg: Message = { 
+    id: Date.now().toString(), 
+    text: currentInput, 
+    senderRole: "user", 
+    senderId: user.uid, 
+    senderName: user.displayName || "User", 
+    timestamp: new Date() 
+  };
+
+  const newMsgs = [...currentMessages, userMsg];
+  setCurrentMessages(newMsgs);
+  setInputText("");
+  
+  // Save to Firebase immediately
+  saveChatHistory(
+    toggled ? newMsgs : chatMessages,
+    toggled ? planMessages : newMsgs
+  );
+
+  try {
+    if (toggled) {
+      // --- CHAT MODE ---
+      const res = await fetch(CHAT_API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          messages: newMsgs.map(m => ({ 
+            role: m.senderRole === "user" ? "user" : "assistant", 
+            content: m.text 
+          }))
+        })
+      });
+      const data = await res.json();
+      addBotMessage(data.reply);
+
+    } else if (activePlan) {
+      // --- PLAN MODE ---
+      if (activePlan.days.length === 0) {
+        const fieldNames = ["age", "weight", "height", "goal", "injury", "time", "pref"];
+        const updatedFormData = { ...formData, [fieldNames[planStep]]: currentInput };
+        setFormData(updatedFormData);
+
+        if (planStep < questions.length - 1) {
+          addBotMessage(questions[planStep + 1]);
+          setPlanStep(planStep + 1);
         } else {
-          addBotMessage("Updating... 🔄");
-          const res = await fetch(PLAN_UPDATE_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ currentPlan: { days: activePlan.days }, instruction: currentInput }) });
+          addBotMessage("Generating your custom plan using our exercise database... 🏋️‍♂️");
+          const res = await fetch(PLAN_GEN_URL, { 
+            method: "POST", 
+            headers: { "Content-Type": "application/json" }, 
+            body: JSON.stringify(updatedFormData) 
+          });
           const result = await res.json();
+          
           const updated = allPlans.map(p => p.id === activePlan.id ? { ...p, days: result.plan.days } : p);
           await setDoc(doc(db, "userPlans", user.uid), { plans: updated }, { merge: true });
-          addBotMessage("Updated!");
+          addBotMessage(`Success! "${activePlan.name}" is ready.`);
+          setPlanStep(0);
         }
+      } else {
+        // --- UPDATE EXISTING PLAN ---
+        addBotMessage("Updating plan... 🔄");
+        const res = await fetch(PLAN_UPDATE_URL, { 
+          method: "POST", 
+          headers: { "Content-Type": "application/json" }, 
+          body: JSON.stringify({ currentPlan: { days: activePlan.days }, instruction: currentInput }) 
+        });
+        const result = await res.json();
+        const updated = allPlans.map(p => p.id === activePlan.id ? { ...p, days: result.plan.days } : p);
+        await setDoc(doc(db, "userPlans", user.uid), { plans: updated }, { merge: true });
+        addBotMessage("Your plan has been updated based on your request!");
       }
-    } catch (err) { addBotMessage("Error occurred."); }
-  };
+    }
+  } catch (err) { 
+    addBotMessage("I'm sorry, I'm having trouble connecting to the server. Please try again."); 
+  }
+};
 
   return (
     // Added h-[700px] and flex-col to keep it contained
