@@ -109,14 +109,15 @@ export function ProfilePage({ userId, userName }: ProfilePageProps) {
 
   // Optional: Function to log today's workout to Firestore
   const toggleTodayWorkout = async () => {
-    const todayStr = new Date().toISOString().split('T')[0];
-    const workoutRef = doc(db, 'users', userId, 'workouts', todayStr);
-    
-    await setDoc(workoutRef, {
-      completed: true,
-      timestamp: serverTimestamp()
-    }, { merge: true });
-  };
+  const today = new Date();
+  const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  
+  const workoutRef = doc(db, 'users', userId, 'workouts', dateStr);
+  await setDoc(workoutRef, {
+    completed: true,
+    timestamp: serverTimestamp()
+  }, { merge: true });
+};
 
   // --- Existing Logic (Unchanged) ---
 
@@ -152,7 +153,7 @@ const getCalendarDays = () => {
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);
   
-  const days = [];
+  const days: Array<{ date: Date; hasWorkout: boolean; isToday: boolean }> = [];
   const startDay = firstDay.getDay();
 
   for (let i = 0; i < startDay; i++) {
@@ -162,13 +163,11 @@ const getCalendarDays = () => {
   for (let day = 1; day <= lastDay.getDate(); day++) {
     const date = new Date(year, month, day);
     
-    // ✅ ใช้สูตรแปลง Local Date เป็น ISO String แบบเดียวกัน
-    const offset = date.getTimezoneOffset() * 60000;
-    const dateStr = (new Date(date.getTime() - offset)).toISOString().split('T')[0];
+    // FIX: Use local date string instead of ISO to prevent timezone shifts
+    const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
     
     const hasWorkout = completedWorkouts.some(w => w.date === dateStr && w.completed);
     const isToday = date.toDateString() === today.toDateString();
-    
     days.push({ date, hasWorkout, isToday });
   }
   return days;
