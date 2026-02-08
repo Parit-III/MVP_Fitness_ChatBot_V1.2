@@ -7,7 +7,7 @@ import { db } from "../firebase";
 interface Message {
   id: string;
   text: string;
-  senderRole: "user" | "bot";
+  senderRole: "user" | "bot" | "system";
   senderId?: string;
   senderName?: string;
   timestamp: Date;
@@ -128,22 +128,48 @@ export function Chatbot({ userName }: ChatbotProps) {
         modeText = `Plan Mode: Filling "${activePlan.name}". ${questions[0]}`;
       }
     }
-    addBotMessage(modeText);
+    addSystemMessage(modeText);
   }, [toggled]);
 
   const addBotMessage = (text: string) => {
+  setCurrentMessages(prev => {
+    const updated = [
+      ...prev,
+      {
+        id: Date.now().toString(),
+        text,
+        senderRole: "bot" as const,
+        senderId: "bot",
+        senderName: "FitPro AI",
+        timestamp: new Date(),
+      },
+    ];
+
+    // ✅ save เฉพาะ bot / user เท่านั้น
+    saveChatHistory(
+      toggled ? updated : chatMessages,
+      toggled ? planMessages : updated
+    );
+
+    return updated;
+  });
+};
+
+
+  const addSystemMessage = (text: string) => {
   setCurrentMessages(prev => [
     ...prev,
     {
       id: Date.now().toString(),
       text,
-      senderRole: "bot",
-      senderId: "bot",
-      senderName: "FitPro AI",
+      senderRole: "system",
+      senderId: "system",
+      senderName: "System",
       timestamp: new Date(),
     }
   ]);
-}; // new
+};
+
   
   const saveChatHistory = async (
   chatMsgs: Message[],

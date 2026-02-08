@@ -34,12 +34,26 @@ export function ExerciseDetail({ exercise, planName, onBack, onComplete, userId 
   };
 
   // Estimate time for rep-based exercises (e.g., "12-15" -> ~40 seconds at 3 sec per rep)
-  const estimateRepTime = (reps: string): number => {
-    const match = reps.match(/(\d+)/);
-    if (!match) return 60; // default 60 seconds
-    const repCount = parseInt(match[1]);
-    return Math.max(repCount * 0, 0); // 3 seconds per rep, minimum 30 seconds 3, 30
-  };
+  // const estimateRepTime = (reps: string): number => {
+  //   const match = reps.match(/(\d+)/);
+  //   if (!match) return 60; // default 60 seconds
+  //   const repCount = parseInt(match[1]);
+  //   return Math.max(repCount * 0, 0); // 3 seconds per rep, minimum 30 seconds 3, 30
+  // };
+
+  // Estimate time for rep-based exercises
+const estimateRepTime = (reps: string | number | undefined | null): number => {
+  if (reps == null) return 60;
+
+  const repsStr = String(reps); // ⭐ จุดสำคัญ
+  const match = repsStr.match(/(\d+)/);
+
+  if (!match) return 60; // default 60 seconds
+
+  const repCount = parseInt(match[1], 10);
+  return Math.max(repCount * 0, 0); // 3 sec/rep, ขั้นต่ำ 30 วิ
+};
+
 
   const setDurationSeconds = hasTimedSets 
     ? parseDuration(exercise.duration)

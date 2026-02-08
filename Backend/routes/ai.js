@@ -94,7 +94,7 @@ router.post("/plan", async (req, res) => {
   STRICT RULES:
   - Make a workout plan that suit user needs
   - Match exercises to the user's goal
-  - If user wants to avoid a body part, replace with other muscle groups or cardio
+  - If user wants to avoid a body part, replace with other muscle 
   - Return ONLY valid JSON (Very Important)
   - English only
   - No explanation text
@@ -192,7 +192,7 @@ STRICT RULES:
 - If an exercise is removed, REPLACE it with a suitable alternative
 - Keep at least 2–4 exercises per day
 - Match replacement exercises to the user's goal
-- If user wants to avoid a body part, replace with other muscle groups or cardio
+- If user wants to avoid a body part, replace with other muscle
 - Return ONLY valid JSON
 - Same structure as input
 - English only
