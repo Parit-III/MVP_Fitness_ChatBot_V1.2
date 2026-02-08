@@ -98,35 +98,34 @@ export function ExerciseDetail({ exercise, planName, onBack, onComplete, userId 
 
 // ในไฟล์ ExerciseDetail.tsx
 const handleMarkComplete = async () => {
-    if (!userId || !exercise?.name) {
-      console.error("Missing Data:", { userId, exerciseName: exercise?.name });
-      alert("ไม่สามารถบันทึกได้เนื่องจากข้อมูลไม่สมบูรณ์");
-      return;
-    }
+  if (!userId || !exercise?.name) return;
 
-    try {
-      const todayStr = new Date().toISOString().split('T')[0];
-      
-      // ✅ เปลี่ยน Path ให้ตรงกับ Rules: /workouts/{userId}/records/{todayStr}
-      const workoutRef = doc(db, 'workouts', userId, 'records', todayStr);
-      
-      await setDoc(workoutRef, {
+  try {
+    const todayStr = new Date().toISOString().split('T')[0];
+
+    // ✅ ใช้ path เดียวกับ ProfilePage
+    const workoutRef = doc(db, 'users', userId, 'workouts', todayStr);
+
+    await setDoc(
+      workoutRef,
+      {
         completed: true,
         timestamp: serverTimestamp(),
-        exerciseName: exercise.name, // ใช้ชื่อ Field ให้ตรงกับความหมาย
-        planName: planName
-      }, { merge: true });
-      
-      console.log("Workout saved to /workouts sub-collection!");
+        exerciseName: exercise.name,
+        planName: planName,
+      },
+      { merge: true }
+    );
 
-      if (onComplete) onComplete();
-      onBack();
-      
-    } catch (error: any) {
-      console.error("Firestore Error:", error);
-      alert(`ไม่สามารถบันทึกได้: ${error.message}`);
-    }
+    console.log("Workout saved → users/{uid}/workouts");
+
+    if (onComplete) onComplete();
+    onBack();
+  } catch (error: any) {
+    console.error(error);
+  }
 };
+
 
   // Check if current set is complete
   const isSetComplete = timeRemaining === 0;

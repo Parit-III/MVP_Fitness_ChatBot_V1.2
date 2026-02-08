@@ -73,7 +73,7 @@ router.post("/plan", async (req, res) => {
     const userVector = await embedText(`${goal} ${pref}`);
     
     // 2. Find matching exercises from YOUR Firestore
-    const topExercises = await findSimilarExercisesLocal(userVector);
+    const topExercises = await findSimilarExercisesLocal(userVector,7);
     
     // 3. Format matches for the AI context
     const contextText = topExercises.map(ex => 

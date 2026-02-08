@@ -10,18 +10,22 @@
   Run `npm run dev` to start the development server.
   
 
+
 ```
 MVP_Fitness_ChatBot_V1.2
 ├─ Backend
 │  ├─ .env
+│  ├─ data
+│  │  └─ Exe.json
+│  ├─ embed_service.py
+│  ├─ firebase.js
+│  ├─ get_vector.py
 │  ├─ package-lock.json
 │  ├─ package.json
 │  ├─ routes
-│  │  ├─ ai.js
-│  │  └─ getRelevantContext.js
+│  │  └─ ai.js
 │  ├─ scripts
-│  │  ├─ embedExercises.js
-│  │  └─ firebaseAdmin.js
+│  │  └─ generate_vectors.js
 │  └─ server.js
 ├─ Frontend
 │  ├─ .env
@@ -30,10 +34,6 @@ MVP_Fitness_ChatBot_V1.2
 │  │  │  ├─ index-CNomaQlj.css
 │  │  │  └─ index-CVwTmMS-.js
 │  │  └─ index.html
-│  ├─ data
-│  │  ├─ Exe.json
-│  │  ├─ exercises_with_vectors.json
-│  │  └─ GymBroButJson.json
 │  ├─ dist
 │  │  ├─ assets
 │  │  │  ├─ index-BhjYWUQK.js
@@ -42,11 +42,6 @@ MVP_Fitness_ChatBot_V1.2
 │  ├─ index.html
 │  ├─ package-lock.json
 │  ├─ package.json
-│  ├─ scripts
-│  │  ├─ embeder.py
-│  │  ├─ embedExercises.js
-│  │  ├─ firebaseNode.ts
-│  │  └─ seedExercises.ts
 │  ├─ src
 │  │  ├─ App.tsx
 │  │  ├─ Attributions.md

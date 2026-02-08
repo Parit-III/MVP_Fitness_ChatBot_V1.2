@@ -227,10 +227,27 @@ export function ExercisePlans({
                       className="mt-4 p-3 bg-indigo-50 rounded-xl border"
                     >
                       <p className="font-bold text-sm mb-2">{day.day}</p>
-                      {day.exercises.map((ex: any, eIdx: number) => (
+                      {/* {day.exercises.map((ex: any, eIdx: number) => (
                         <div
                           key={eIdx}
                           className="text-xs flex justify-between border-b py-1 last:border-0"
+                        >
+                          <span>{ex.name}</span>
+                          <span className="font-medium">
+                            {ex.sets}x{ex.reps}
+                          </span>
+                        </div>
+                      ))} */}
+                      {day.exercises.map((ex: any, eIdx: number) => (
+                        <div
+                          key={eIdx}
+                          onClick={() => {
+                            if (onStartExercise) {
+                              onStartExercise(ex, plan.name);
+                            }
+                          }}
+                          className="cursor-pointer text-xs flex justify-between border-b py-1 last:border-0
+                                    hover:bg-indigo-100 rounded px-2 transition"
                         >
                           <span>{ex.name}</span>
                           <span className="font-medium">
