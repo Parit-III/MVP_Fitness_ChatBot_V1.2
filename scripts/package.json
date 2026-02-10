@@ -1,0 +1,7 @@
+{
+  "type": "module",
+  "dependencies": {
+    "@huggingface/transformers": "^3.8.1",
+    "cli-progress": "^3.12.0"
+  }
+}

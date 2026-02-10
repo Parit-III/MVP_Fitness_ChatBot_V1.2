@@ -14,6 +14,9 @@ const router = express.Router();
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
 const MODEL = "llama-3.1-8b-instant";
 
+const HF_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2";
+const HF_API_URL = `https://router.huggingface.co/hf-inference/models/${HF_MODEL}/pipeline/feature-extraction`;
+
 const groq = async (messages, max_tokens = 900) => {
   const res = await axios.post(
     GROQ_URL,
@@ -36,11 +39,28 @@ const groq = async (messages, max_tokens = 900) => {
 
 const embedText = async (text) => {
   try {
-    const response = await axios.post("http://localhost:5001/embed", { text });
-    return response.data.vector; 
+    const response = await axios.post(
+      HF_API_URL,
+      { 
+        inputs: text,
+        options: { wait_for_model: true } 
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.HUGGINGFACE_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    // ✅ FIX: Extract the vector properly. 
+    // Hugging Face often returns [[0.1, 0.2...]] for this model.
+    const result = response.data;
+    return Array.isArray(result[0]) ? result[0] : result; 
+
   } catch (err) {
-    console.error("❌ Python Service Error: Is embed_service.py running on port 5001?");
-    throw new Error("Embedding service offline");
+    console.error("❌ EMBEDDING ERROR:", err.response?.data || err.message);
+    throw err;
   }
 };
 
@@ -49,10 +69,19 @@ const __dirname = path.dirname(__filename);
 const exercisesPath = path.join(__dirname, "../data/Exe.json"); // Adjust path if needed
 const exercisesData = JSON.parse(fs.readFileSync(exercisesPath, "utf8"));
 
-const findSimilarExercisesLocal = async (queryVector, limit = 5) => {
-  // We use the data already loaded in memory
+const findSimilarExercisesLocal = async (queryVector, limit = 5, avoidPart = "None") => {
   return exercisesData
-    .filter(ex => ex.embedding && Array.isArray(ex.embedding)) // Ensure they have vectors
+    .filter(ex => {
+      // 1. ตรวจสอบว่ามี vector หรือไม่
+      const hasVector = ex.embedding && Array.isArray(ex.embedding);
+      
+      // 2. ตรวจสอบว่าไม่ใช่ส่วนที่ต้องเลี่ยง (Case-insensitive)
+      // ถ้า avoidPart เป็น "None" จะให้ผ่านหมด แต่ถ้ามีระบุ จะต้องไม่ตรงกับ BodyPart ของท่า
+      const isSafe = avoidPart === "None" || 
+                     ex.BodyPart.toLowerCase() !== avoidPart.toLowerCase();
+
+      return hasVector && isSafe;
+    })
     .map(ex => ({
       ...ex,
       score: similarity(queryVector, ex.embedding) || 0
@@ -69,20 +98,31 @@ router.post("/plan", async (req, res) => {
   const { age, weight, height, goal, injury, time, pref } = req.body;
 
   try{
+
+    const analysisPrompt = `
+      The user says they have this injury: "${injury}" or preference: "${pref}".
+      Which body part should they avoid exercising? 
+      Choose ONLY ONE from this list: 
+      ['Abdominals', 'Abductors', 'Adductors', 'Biceps', 'Calves',
+       'Chest', 'Forearms', 'Glutes', 'Hamstrings', 'Lats', 'Lower Back',
+       'Middle Back', 'Traps', 'Quadriceps', 'Shoulders', 'Triceps'].
+      If no specific body part should be avoided, return "None".
+      Return ONLY the body part name or "None".
+    `;
+
+    const avoidPart = await groq([
+      { role: "system", content: "You are a fitness expert." },
+      { role: "user", content: analysisPrompt }
+    ]);
+    console.log(`🚫 AI decided to avoid: ${avoidPart}`);
+
     // 1. Get vector for user's goal + preference
     const userVector = await embedText(`${goal} ${pref}`);
-    
-    // 2. Find matching exercises from YOUR Firestore
-    const topExercises = await findSimilarExercisesLocal(userVector,7);
-    
-    // 3. Format matches for the AI context
+    const topExercises = await findSimilarExercisesLocal(userVector, 7, avoidPart.trim());
+
+    // ค. สร้าง Context (เหมือนเดิม)
     const contextText = topExercises.map(ex => 
-    `---
-    Exercise: ${ex.Title}
-    Focus: ${ex.BodyPart} (${ex.Type})
-    Equipment: ${ex.Equipment}
-    Level: ${ex.Level}
-    Description: ${ex.Desc}`
+      `---\nExercise: ${ex.Title}\nFocus: ${ex.BodyPart}\nDescription: ${ex.Desc}`
     ).join("\n\n");
 
     console.log("--- DEBUG: RAG CONTEXT START ---");
@@ -110,6 +150,7 @@ router.post("/plan", async (req, res) => {
   - goal: ${goal}
   - injury: ${injury || "None"}
   - free time: ${time} minute/day
+  - additional: ${pref}
 
   OUTPUT FORMAT EXACTLY JSON:
   {
@@ -129,7 +170,8 @@ router.post("/plan", async (req, res) => {
       { role: "user", content: prompt }
     ]);
 
-    const plan = JSON.parse(content);
+    const cleanJson = content.replace(/```json|```/g, "").trim();
+    const plan = JSON.parse(cleanJson);
     res.json({ plan });
 
   } catch (err) {
@@ -223,7 +265,8 @@ OUTPUT FORMAT EXACTLY:
       { role: "user", content: prompt }
     ]);
 
-    const plan = JSON.parse(content);
+    const cleanJson = content.replace(/```json|```/g, "").trim();
+    const plan = JSON.parse(cleanJson);
     res.json({ plan });
   } catch (err) {
     console.error("UPDATE ERROR:", err.message);
