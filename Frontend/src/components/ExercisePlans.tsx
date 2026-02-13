@@ -50,9 +50,11 @@ export interface ExercisePlan {
 export function ExercisePlans({
   availableExercises,
   onStartExercise,
+  onViewDetail,
 }: {
   availableExercises?: Exercise[];
   onStartExercise?: (exercise: Exercise, planName: string) => void;
+  onViewDetail?: (planId: string) => void;
 }) {
   const { user } = useContext(AuthContext);
 
@@ -143,6 +145,23 @@ export function ExercisePlans({
     setShowMenu(null);
   };
 
+  const sortPlans = (plans: ExercisePlan[]) => {
+    return [...plans].sort((a, b) => {
+      // 1️⃣ เช็คสถานะ Active: ใคร Active ให้ขึ้นก่อน (ซ้ายสุด)
+      const aActive = a.id === activePlanId;
+      const bActive = b.id === activePlanId;
+      if (aActive && !bActive) return -1;
+      if (!aActive && bActive) return 1;
+
+      // 2️⃣ เช็คสถานะ Pin: ใคร Pin ให้มาอยู่ทางซ้าย (ต่อจากอันที่ Active)
+      if (a.isPinned && !b.isPinned) return -1;
+      if (!a.isPinned && b.isPinned) return 1;
+
+      // 3️⃣ ถ้าสถานะเหมือนกัน ให้เรียงตามลำดับเดิม
+      return 0; 
+    });
+  };
+
   /* =======================
      Render
   ======================= */
@@ -165,27 +184,21 @@ export function ExercisePlans({
           className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 shadow-lg"
         >
           <Plus className="w-5 h-5" />
-          New Big Plan
+          New Plan
         </button>
       </div>
 
       {/* Plans Grid */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {bigPlans.map((plan) => {
+        {sortPlans(bigPlans).map((plan) => {
           const isActive = activePlanId === plan.id;
           const isPinned = plan.isPinned;
 
           return (
             <div
               key={plan.id}
-              className={`bg-white rounded-2xl shadow-lg border-2 transition-all
-                ${
-                  isActive
-                    ? "border-blue-500 ring-4 ring-blue-50"
-                    : isPinned
-                    ? "border-yellow-400"
-                    : "border-gray-100"
-                }`}
+              className={`relative bg-white rounded-2xl shadow-lg border-2 transition-all
+                ${isActive ? "border-blue-500 ring-4 ring-blue-50" : isPinned ? "border-yellow-400" : "border-gray-100"}`}
             >
               <div className="p-6">
                 {/* Title */}
@@ -216,16 +229,10 @@ export function ExercisePlans({
                 </p>
 
                 <button
-                  onClick={() =>
-                    setExpandedPlan(
-                      expandedPlan === plan.id ? null : plan.id
-                    )
-                  }
-                  className="w-full py-2 bg-gray-50 text-indigo-600 rounded-lg font-medium hover:bg-indigo-50"
+                  onClick={() => onViewDetail?.(plan.id)}
+                  className="px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg font-medium hover:bg-indigo-100"
                 >
-                  {expandedPlan === plan.id
-                    ? "Hide Details"
-                    : "View Exercises"}
+                  Viwe Detail
                 </button>
 
                 {/* Expanded */}
@@ -270,40 +277,44 @@ export function ExercisePlans({
               </div>
 
               {/* Menu */}
+              {/* Menu */}
               {showMenu === plan.id && (
-                <div
-                  className="fixed inset-0 z-50 flex items-center justify-center bg-black/30"
-                  onClick={() => setShowMenu(null)}
-                >
-                  <div
-                    className="bg-white rounded-2xl p-6 w-full max-w-xs"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <button
-                      onClick={() => handleSetActive(plan.id)}
-                      className="w-full flex items-center gap-3 p-3 hover:bg-blue-50 rounded-lg text-blue-700"
-                    >
-                      <Target className="w-5 h-5" />
-                      Set as Active
-                    </button>
+                <>
+                  {/* ฉากหลังใสสำหรับกดปิดเมนู (Overlay) */}
+                  <div 
+                    className="fixed inset-0 z-40" 
+                    onClick={() => setShowMenu(null)} 
+                  />
+                  
+                  {/* ตัวเมนู - ปรับตำแหน่งให้อยู่ใต้ปุ่มสามจุดพอดี */}
+                  <div className="absolute right-4 top-14 z-50">
+                    <div className="bg-white rounded-xl shadow-xl w-56 p-2 border border-gray-100 flex flex-col">
+                      <button
+                        onClick={() => handleSetActive(plan.id)}
+                        className="w-full flex items-center gap-3 p-2 hover:bg-gray-100 rounded-lg text-blue-700 transition-colors"
+                      >
+                        <Target className="w-4 h-4" />
+                        <span className="text-sm font-medium">Set as Active</span>
+                      </button>
 
-                    <button
-                      onClick={() => handlePinPlan(plan.id)}
-                      className="w-full flex items-center gap-3 p-3 hover:bg-yellow-50 rounded-lg text-yellow-700"
-                    >
-                      <Pin className="w-5 h-5" />
-                      {isPinned ? "Unpin" : "Pin"}
-                    </button>
+                      <button
+                        onClick={() => handlePinPlan(plan.id)}
+                        className="w-full flex items-center gap-3 p-2 hover:bg-gray-100 rounded-lg text-yellow-700 transition-colors"
+                      >
+                        <Pin className="w-4 h-4" />
+                        <span className="text-sm font-medium">{isPinned ? "Unpin" : "Pin"}</span>
+                      </button>
 
-                    <button
-                      onClick={() => handleDeletePlan(plan.id)}
-                      className="w-full flex items-center gap-3 p-3 hover:bg-red-50 rounded-lg text-red-600"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                      Delete
-                    </button>
+                      <button
+                        onClick={() => handleDeletePlan(plan.id)}
+                        className="w-full flex items-center gap-3 p-2 hover:bg-red-50 rounded-lg text-red-600 transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        <span className="text-sm font-medium">Delete</span>
+                      </button>
+                    </div>
                   </div>
-                </div>
+                </>
               )}
             </div>
           );

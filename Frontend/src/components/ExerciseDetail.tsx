@@ -145,7 +145,10 @@ const handleMarkComplete = async () => {
   const isSetComplete = timeRemaining === 0;
 
   // Calculate progress percentage
-  const progressPercentage = ((setDurationSeconds - timeRemaining) / setDurationSeconds) * 100;
+  // ✅ แก้เป็น (ดักกรณี setDurationSeconds เป็น 0 หรือ NaN)
+const progressPercentage = setDurationSeconds > 0 
+  ? ((setDurationSeconds - timeRemaining) / setDurationSeconds) * 100 
+  : 0;
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -248,7 +251,7 @@ const handleMarkComplete = async () => {
                     onClick={handleNextSet}
                     className="flex items-center gap-2 bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors font-medium animate-pulse"
                   >
-                    {currentSet < totalSets ? 'Next Set ✓' : 'Finish ✓'}
+                    {currentSet < totalSets ? 'Next' : 'Finish'}
                   </button>
                 )}
               </div>

@@ -7,6 +7,7 @@ import { Exercise } from './ExercisePlans';
 import { getExercises } from "../services/exerciseService";
 import { WorkoutLibrary } from "./WorkoutLibrary";
 import { ExerciseDetail } from "./ExerciseDetail";
+import { PlanDetail } from './PlanDetail';
 import { doc, collection, query, setDoc, serverTimestamp, onSnapshot, limit } from "firebase/firestore";
 import { db } from "../firebase";
 
@@ -21,6 +22,7 @@ interface WorkoutStreak {
 }
 
 export function Dashboard({ user, onLogout }: DashboardProps) {
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
   const [selectedPlanName, setSelectedPlanName] = useState<string>("");
 
@@ -97,158 +99,181 @@ const handleWorkoutComplete = async (date: string) => {
     setExerciseLibrary(prev => [...prev, exercise]);
   };
 
+  // ✅ 1. ถ้ามีการเลือกท่าออกกำลังกาย (Exercise Mode)
+  if (selectedExercise) {
+    return (
+      <div className="min-h-screen bg-white">
+        <ExerciseDetail 
+          exercise={selectedExercise}
+          planName={selectedPlanName}
+          userId={user.uid}
+          onBack={() => {
+            setSelectedExercise(null);
+          }}
+          onComplete={() => {
+            setSelectedExercise(null);
+            setView('profile');
+          }}
+        />
+      </div>
+    );
+  }
+
+  // ✅ 2. ถ้ามีการเลือกดูรายละเอียดแผน (Plan Detail Mode)
+  if (selectedPlanId) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <PlanDetail 
+          planId={selectedPlanId} 
+          onBack={() => setSelectedPlanId(null)} 
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 flex flex-col">
-      {/* Header */}
-      <header className="glass-effect border-b border-white/20 shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/30 animate-pulse-glow">
-              <Dumbbell className="w-7 h-7 text-white" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">FitPro</h1>
-              <p className="text-xs text-gray-600">Your fitness journey starts here</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setView('chat')}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all duration-300 ${
-                view === 'chat' 
-                  ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/30 scale-105' 
-                  : 'text-gray-700 hover:bg-white/60 hover:scale-105'
-              }`}
-            >
-              <MessageCircle className="w-5 h-5" />
-              <span className="hidden sm:inline">Chat</span>
-            </button>
-            <button
-              onClick={() => setView('plans')}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all duration-300 ${
-                view === 'plans' 
-                  ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/30 scale-105' 
-                  : 'text-gray-700 hover:bg-white/60 hover:scale-105'
-              }`}
-            >
-              <List className="w-5 h-5" />
-              <span className="hidden sm:inline">My Plans</span>
-            </button>
-            <button
-              onClick={() => setView('profile')}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all duration-300 ${
-                view === 'profile' 
-                  ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/30 scale-105' 
-                  : 'text-gray-700 hover:bg-white/60 hover:scale-105'
-              }`}
-            >
-              <User className="w-5 h-5" />
-              <span className="hidden sm:inline">Profile</span>
-            </button>
-            <button
-              onClick={() => setView('workouts')}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all duration-300 ${
-                view === 'workouts' 
-                  ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/30 scale-105' 
-                  : 'text-gray-700 hover:bg-white/60 hover:scale-105'
-              }`}
-            >
-              <BookOpen className="w-5 h-5" />
-              <span className="hidden sm:inline">Workouts</span>
-            </button>
-            <div className="w-px h-8 bg-gray-300 mx-2 hidden md:block"></div>
-            <div className="hidden md:flex items-center gap-3 px-3 py-2 bg-white/60 rounded-xl">
-              <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center">
-                <User className="w-4 h-4 text-white" />
-              </div>
-              <span className="text-gray-800 font-medium">{user.name}</span>
-            </div>
-            <button
-              onClick={onLogout}
-              className="flex items-center gap-2 px-4 py-2.5 text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all duration-300 hover:scale-105"
-            >
-              <LogOut className="w-5 h-5" />
-              <span className="hidden sm:inline">Logout</span>
-            </button>
-          </div>
+      {/* 🔴 ส่วนที่ 1: หน้าออกกำลังกาย (Exercise Mode) - แสดงเต็มหน้าจอทับ Header */}
+      {selectedExercise ? (
+        <div className="flex-1 bg-white">
+          <ExerciseDetail 
+            exercise={selectedExercise}
+            planName={selectedPlanName}
+            userId={user.uid}
+            onBack={() => {
+              setSelectedExercise(null);
+              // กลับมาที่หน้าแผนงานเดิม
+              setView('plans');
+            }}
+            onComplete={() => {
+              setSelectedExercise(null);
+              setView('profile');
+            }}
+          />
         </div>
-      </header>
+      ) : (
+        /* 🔵 ส่วนที่ 2: หน้าปกติของแอพ (App Mode) - มี Header */
+        <>
+          <header className="glass-effect border-b border-white/20 shadow-lg">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+              {/* Logo */}
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                  <Dumbbell className="w-7 h-7 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">FitPro</h1>
+                  <p className="text-xs text-gray-600">Your fitness journey starts here</p>
+                </div>
+              </div>
 
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col">
-        {view === 'chat' ? (
-          <div className="flex-1 flex items-center justify-center p-4">
-            <div className="w-full max-w-4xl h-[calc(100vh-120px)] bg-white rounded-2xl shadow-xl flex flex-col">
-              <Chatbot userName={user.name}
-                availableExercises={exerciseLibrary} /> 
-              {/* onPlanCreated={handlePlanCreated} */}
+              {/* Navigation Menu */}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => { setView('chat'); setSelectedPlanId(null); }}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all duration-300 ${
+                    view === 'chat' ? 'bg-indigo-600 text-white shadow-lg' : 'text-gray-700 hover:bg-white/60'
+                  }`}
+                >
+                  <MessageCircle className="w-5 h-5" />
+                  <span className="hidden sm:inline">Chat</span>
+                </button>
+
+                <button
+                  onClick={() => { setView('plans'); setSelectedPlanId(null); }}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all duration-300 ${
+                    view === 'plans' ? 'bg-indigo-600 text-white shadow-lg' : 'text-gray-700 hover:bg-white/60'
+                  }`}
+                >
+                  <List className="w-5 h-5" />
+                  <span className="hidden sm:inline">My Plans</span>
+                </button>
+
+                <button
+                  onClick={() => { setView('profile'); setSelectedPlanId(null); }}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all duration-300 ${
+                    view === 'profile' ? 'bg-indigo-600 text-white shadow-lg' : 'text-gray-700 hover:bg-white/60'
+                  }`}
+                >
+                  <User className="w-5 h-5" />
+                  <span className="hidden sm:inline">Profile</span>
+                </button>
+
+                {/* ✅ ปุ่ม Workouts กลับมาแล้ว */}
+                <button
+                  onClick={() => { setView('workouts'); setSelectedPlanId(null); }}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all duration-300 ${
+                    view === 'workouts' ? 'bg-indigo-600 text-white shadow-lg' : 'text-gray-700 hover:bg-white/60'
+                  }`}
+                >
+                  <BookOpen className="w-5 h-5" />
+                  <span className="hidden sm:inline">Workouts</span>
+                </button>
+
+                <div className="w-px h-8 bg-gray-300 mx-2 hidden md:block"></div>
+
+                <button
+                  onClick={onLogout}
+                  className="flex items-center gap-2 px-4 py-2.5 text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all"
+                >
+                  <LogOut className="w-5 h-5" />
+                  <span className="hidden sm:inline">Logout</span>
+                </button>
+              </div>
             </div>
-          </div>
-        ) : view === 'plans' ? (
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-            // ใน Dashboard.tsx
-// ✅ แก้ไขฟังก์ชัน onStartExercise
-<ExercisePlans
-  availableExercises={exerciseLibrary}
-  onStartExercise={(exerciseFromPlan, planName) => {
-    // ข้อมูลจาก Plan (exerciseFromPlan) ตอนนี้มีข้อมูล Master ติดมาด้วยแล้ว
-    // สร้าง Object ที่สมบูรณ์จากข้อมูลใน Plan ได้เลย
-    const exerciseToView = {
-      ...exerciseFromPlan,
-      // Mapping ชื่อฟิลด์ให้ตรงกับที่ Component ปลายทางต้องการ
-      Title: exerciseFromPlan.Title || exerciseFromPlan.name,
-      Desc: exerciseFromPlan.Desc || exerciseFromPlan.desc,
-      BodyPart: exerciseFromPlan.BodyPart || exerciseFromPlan.bodyPart,
-      id: exerciseFromPlan.id || `ex_${Date.now()}`
-    } as Exercise;
+          </header>
 
-    setSelectedExercise(exerciseToView);
-    setSelectedPlanName(planName);
-    setView('exercise');
-  }}
-/>
-
-          </div>
-        ) : view === 'profile' ? (
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-            <ProfilePage 
-              userId={user.uid} // Now passing the uid for Firestore
-              userName={user.name}
-            />
-          </div>
-        )  : view === 'exercise' ? (
-          <div className="max-w-4xl mx-auto px-4 py-8 w-full">
-            {selectedExercise && (
-              <ExerciseDetail 
-                exercise={selectedExercise}
-                planName={selectedPlanName} // ✅ แก้จาก selectedPlan.name เป็น selectedPlanName
-                userId={user.uid}
-                onBack={() => {
-                  setSelectedExercise(null);
-                  setView('plans'); // เมื่อกด Back ให้กลับไปหน้าแผนงาน
-                }}
-                onComplete={() => {
-                  // เพิ่มเติม: เมื่อกดเสร็จสิ้น อาจจะให้กลับไปหน้า Profile เพื่อดู Streak
-                  setView('profile');
-                }}
+          <main className="flex-1 flex flex-col">
+            {/* เช็คหน้า PlanDetail ก่อนเป็นลำดับแรกใน Main */}
+            {selectedPlanId ? (
+              <PlanDetail 
+                planId={selectedPlanId} 
+                onBack={() => setSelectedPlanId(null)} 
               />
+            ) : view === 'chat' ? (
+              <div className="flex-1 flex items-center justify-center p-4">
+                <div className="w-full max-w-4xl h-[calc(100vh-140px)] bg-white rounded-2xl shadow-xl flex flex-col">
+                  <Chatbot userName={user.name} availableExercises={exerciseLibrary} /> 
+                </div>
+              </div>
+            ) : view === 'plans' ? (
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+                <ExercisePlans
+                  availableExercises={exerciseLibrary}
+                  onViewDetail={(id) => setSelectedPlanId(id)}
+                  onStartExercise={(exerciseFromPlan, planName) => {
+                    const exerciseToView = {
+                      ...exerciseFromPlan,
+                      Title: exerciseFromPlan.Title || exerciseFromPlan.name,
+                      Desc: exerciseFromPlan.Desc || exerciseFromPlan.desc,
+                      BodyPart: exerciseFromPlan.BodyPart || exerciseFromPlan.bodyPart,
+                      id: exerciseFromPlan.id || `ex_${Date.now()}`
+                    } as Exercise;
 
+                    setSelectedExercise(exerciseToView);
+                    setSelectedPlanName(planName);
+                    // ไม่ต้อง setView('exercise') เพราะเราใช้ selectedExercise เป็นตัวตัดสินใจหลักด้านบน
+                  }}
+                />
+              </div>
+            ) : view === 'profile' ? (
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+                <ProfilePage userId={user.uid} userName={user.name} />
+              </div>
+            ) : (
+              /* หน้า Workouts / Library */
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+                <WorkoutLibrary
+                  exercises={exerciseLibrary}
+                  onUpdateExercise={handleUpdateExercise}
+                  onDeleteExercise={handleDeleteExercise}
+                  onAddExercise={handleAddExercise}
+                />
+              </div>
             )}
-          </div>
-
-        ) : (
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-            <WorkoutLibrary
-              exercises={exerciseLibrary}
-              onUpdateExercise={handleUpdateExercise}
-              onDeleteExercise={handleDeleteExercise}
-              onAddExercise={handleAddExercise}
-            />
-          </div>
-        )
-        
-        }
-      </main>
+          </main>
+        </>
+      )}
     </div>
   );
 }
