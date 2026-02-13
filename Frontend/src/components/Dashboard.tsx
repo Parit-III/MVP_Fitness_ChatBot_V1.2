@@ -34,7 +34,7 @@ const [exerciseLibrary, setExerciseLibrary] = useState<Exercise[]>([]);
 
 useEffect(() => {
   // 1. Reference the collection
-  const q = query(collection(db, "exercises"));
+  const q = query(collection(db, "exercises"), limit(20));
   
   // 2. Use onSnapshot for real-time updates
   const unsubscribe = onSnapshot(q, (snapshot) => {
