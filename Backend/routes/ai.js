@@ -250,12 +250,32 @@ Rules:
 router.post("/update-plan", async (req, res) => {
   const { currentPlan, instruction } = req.body;
 
+try {
+  const intentCheck = await groq([
+      { 
+        role: "system", 
+        content: `You are a filter. Determine if the user's input is a request to modify, add, remove, or change a workout plan.
+         Respond with ONLY 'true' or 'false'.` 
+      },
+      { role: "user", content: `Instruction: "${instruction}"` }
+    ]);
+
+    console.log(intentCheck)
+    const isWorkoutRelated = /true/i.test(intentCheck);
+    console.log(isWorkoutRelated)
+
+    if (!isWorkoutRelated) {
+      return res.status(400).json({ 
+        error: "Off-topic instruction", 
+        message: "It looks like you're asking about something else. Please provide instructions related to your workout plan." 
+      });
+    }
+
   const prompt = `
 You are updating a workout plan.
 You are a professional personal trainer.
 STRICT RULES:
 - Never remove all exercises from a day
-- If user need more exercises keep current plan and add more what user request
 - If an exercise is removed, REPLACE it with a suitable alternative
 - Keep at least 2–4 exercises per day
 - Match replacement exercises to the user's goal
@@ -284,7 +304,6 @@ OUTPUT FORMAT EXACTLY:
 }
 `;
 
-  try {
     const content = await groq([
       { role: "system", content: "Workout plan editor (JSON only)" },
       { role: "user", content: prompt }
