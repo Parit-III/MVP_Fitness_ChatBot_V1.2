@@ -21,7 +21,7 @@ const categorizeExercise = (exercise: Exercise): string => {
   const coreKeywords = ['plank', 'crunch', 'core', 'abs', 'twist', 'leg raise'];
   
   // Use nullish coalescing to ensure 'name' is at least an empty string
-  const name = (exercise.name || "").toLowerCase();
+  const name = (exercise.Title || "").toLowerCase();
   
   if (cardioKeywords.some(keyword => name.includes(keyword))) return 'cardio';
   if (coreKeywords.some(keyword => name.includes(keyword))) return 'core';
@@ -30,8 +30,8 @@ const categorizeExercise = (exercise: Exercise): string => {
 
   const filteredExercises = exercises.filter(exercise => {
   // Safe string conversion for name and description
-  const name = (exercise.name || "").toLowerCase();
-  const description = (exercise.description || "").toLowerCase();
+  const name = (exercise.Title || "").toLowerCase();
+  const description = (exercise.Desc || "").toLowerCase();
   const search = searchTerm.toLowerCase();
 
   const matchesSearch = name.includes(search) || description.includes(search);
@@ -131,14 +131,14 @@ const categorizeExercise = (exercise: Exercise): string => {
             <div className="flex items-start justify-between mb-3">
               <div className="flex-1">
                 <h3 className="text-lg font-bold text-gray-900 mb-2">
-                  {exercise.name}
+                  {exercise.Title}
                 </h3>
                 {getCategoryBadge(exercise)}
               </div>
             </div>
 
             <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-              {exercise.description}
+              {exercise.Desc}
             </p>
 
             <div className="flex flex-wrap gap-3 text-sm">

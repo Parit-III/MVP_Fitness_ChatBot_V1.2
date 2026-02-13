@@ -1,0 +1,802 @@
+[
+  {
+    "Title": "Elbow plank",
+    "Desc": "The elbow plank is a popular isometric abdominal exercise. It targets the muscles of the core, the deep core or transversus abdominis in particular.",
+    "Type": "Strength",
+    "BodyPart": "Abdominals",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Bottoms Up",
+    "Desc": "The lying leg lift is a popular bodyweight exercise targeting the muscles of the abs, the rectus abdominis or “six-pack” muscles in particular.",
+    "Type": "Strength",
+    "BodyPart": "Abdominals",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Spider crawl",
+    "Desc": "The spider crawl is a bodyweight exercise that involves crawling on the floor with the knees outside of the elbows. It can be done as a full-body warm-up.",
+    "Type": "Strength",
+    "BodyPart": "Abdominals",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Cocoons",
+    "Desc": "The cocoon crunch is a bodyweight exercise targeting the ab muscles, involving bringing your knees to your chest and your arms from overhead to center.",
+    "Type": "Strength",
+    "BodyPart": "Abdominals",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Cross-Body Crunch",
+    "Desc": "The elbow-to-knee crunch is a bodyweight exercise targeting the ab muscles, the obliques and rectus abdominis in particular.",
+    "Type": "Strength",
+    "BodyPart": "Abdominals",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Decline Crunch",
+    "Desc": "The decline crunch is an effective core exercise targeting the rectus abdominis, performed on a decline bench.",
+    "Type": "Strength",
+    "BodyPart": "Abdominals",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Hanging toes-to-bar",
+    "Desc": "The hanging toes-to-bar is an advanced abdominal exercise in which the lifter touches their feet to a pull-up bar.",
+    "Type": "Strength",
+    "BodyPart": "Abdominals",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Hanging Oblique Knee Raise",
+    "Desc": "An abdominal exercise that targets both the rectus abdominus and the oblique muscles while hanging from a bar.",
+    "Type": "Strength",
+    "BodyPart": "Abdominals",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Hanging leg raise",
+    "Desc": "The hanging leg raise is an exercise targeting the abs, but which also works the lats and hip flexors.",
+    "Type": "Strength",
+    "BodyPart": "Abdominals",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Mountain climber",
+    "Desc": "A popular bodyweight exercise targeting the core, shoulders, and hips. It involves lifting one knee to the chest at a time from a plank position.",
+    "Type": "Plyometrics",
+    "BodyPart": "Abdominals",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Ab bicycle",
+    "Desc": "A bodyweight movement that targets the muscles of the abs, the obliques and rectus abdominis in particular through a pedaling motion.",
+    "Type": "Strength",
+    "BodyPart": "Abdominals",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "3/4 sit-up",
+    "Desc": "Similar to a sit-up, but stops short of the top position. This keeps constant tension on the abs, making it more difficult.",
+    "Type": "Strength",
+    "BodyPart": "Abdominals",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Reverse crunch",
+    "Desc": "Popular exercise targeting the abdominals, particularly the lower half. It involves pulling the knees toward the chest.",
+    "Type": "Strength",
+    "BodyPart": "Abdominals",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Dead bug reach",
+    "Desc": "Exercise for strengthening the core in which you alternate lowering your opposing arm and leg simultaneously.",
+    "Type": "Strength",
+    "BodyPart": "Abdominals",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "V-up",
+    "Desc": "A bodyweight movement that targets the muscles of the abs. It involves lifting the torso and legs to meet in a V-shape.",
+    "Type": "Strength",
+    "BodyPart": "Abdominals",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Russian twist",
+    "Desc": "Exercise targeting the abdominals and the obliques. It involves twisting side to side from a seated position.",
+    "Type": "Strength",
+    "BodyPart": "Abdominals",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Flat Bench Lying Leg Raise",
+    "Desc": "A popular bodyweight exercise targeting the muscles of the abs, particularly the lower rectus abdominis.",
+    "Type": "Strength",
+    "BodyPart": "Abdominals",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Knees tucked crunch",
+    "Desc": "A core exercise that involves performing a crunch while keeping the knees bent in a 90-degree position.",
+    "Type": "Strength",
+    "BodyPart": "Abdominals",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Feet-elevated oblique crunch",
+    "Desc": "Variation on the crunch that targets the obliques by resting the feet on a bench to focus stress on the abs.",
+    "Type": "Strength",
+    "BodyPart": "Abdominals",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Bent-knee reverse crunch",
+    "Desc": "A popular bodyweight core exercise that targets the lower portion of the rectus abdominis.",
+    "Type": "Strength",
+    "BodyPart": "Abdominals",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Alternating heel-touch",
+    "Desc": "Bodyweight exercise that targets the obliques by reaching side-to-side to touch the heels.",
+    "Type": "Strength",
+    "BodyPart": "Abdominals",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Side Bridge",
+    "Desc": "The side plank is a popular isometric abdominal exercise focusing on the oblique muscles and stability.",
+    "Type": "Strength",
+    "BodyPart": "Abdominals",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Lying oblique crunch",
+    "Desc": "The lying oblique crunch is a bodyweight exercise targeting the oblique muscles while lying on the side.",
+    "Type": "Strength",
+    "BodyPart": "Abdominals",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Toe Touchers",
+    "Desc": "A bodyweight movement that targets the rectus abdominis by reaching up to touch the toes while lying on the back.",
+    "Type": "Stretching",
+    "BodyPart": "Abdominals",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Shoulder tap",
+    "Desc": "Exercise targeting the abdominals and core. From a plank position, one hand is raised to tap its opposing shoulder.",
+    "Type": "Strength",
+    "BodyPart": "Abdominals",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Double crunch",
+    "Desc": "Bodyweight exercise involving crunching the knees and elbows toward each other simultaneously using the abs.",
+    "Type": "Strength",
+    "BodyPart": "Abdominals",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Flutter kick",
+    "Desc": "Core exercise where the legs are held off the ground as you flutter your feet in small motions.",
+    "Type": "Strength",
+    "BodyPart": "Abdominals",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Plank leg raise",
+    "Desc": "Isometric abdominal exercise that targets the core and glutes by raising a leg during a plank.",
+    "Type": "Strength",
+    "BodyPart": "Abdominals",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Reach crunch",
+    "Desc": "A core exercise that involves keeping the arms raised toward the ceiling while performing a crunch.",
+    "Type": "Strength",
+    "BodyPart": "Abdominals",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Hollow-body rock",
+    "Desc": "Starts with a hollow-body hold and adds a back-and-forth rock that challenges core stability.",
+    "Type": "Strength",
+    "BodyPart": "Abdominals",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Plank walk-out",
+    "Desc": "From a standing position, the lifter walks the hands forward until they are out in front of the head.",
+    "Type": "Strength",
+    "BodyPart": "Abdominals",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Seated leg lift",
+    "Desc": "A bodyweight exercise targeting the muscles of the core and hip flexors while in a seated position.",
+    "Type": "Strength",
+    "BodyPart": "Abdominals",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Knee-in to V-out",
+    "Desc": "Abdominal exercise that primarily targets the rectus abdominis by combining a knee-in and leg extension.",
+    "Type": "Strength",
+    "BodyPart": "Abdominals",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Plank reach",
+    "Desc": "An exercise targeting the entire core, particularly the obliques, by reaching forward while in a plank.",
+    "Type": "Strength",
+    "BodyPart": "Abdominals",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Plank up-down",
+    "Desc": "Transitioning between elbow plank and straight-arm plank to put more stress on the triceps and core.",
+    "Type": "Strength",
+    "BodyPart": "Abdominals",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Frog kick",
+    "Desc": "An explosive bodyweight movement hopping the rear legs forward from a plank position.",
+    "Type": "Strength",
+    "BodyPart": "Abdominals",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Cross-body mountain climber",
+    "Desc": "Popular exercise where you bring the knee to the opposite side of the body while in a plank.",
+    "Type": "Strength",
+    "BodyPart": "Abdominals",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Barbell floor wiper",
+    "Desc": "Core exercise rotating hips and legs side to side, often performed with a barbell for stability.",
+    "Type": "Strength",
+    "BodyPart": "Abdominals",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Hollow-body knee tuck",
+    "Desc": "Combines a hollow-body hold and a knee tuck to target the rectus abdominis muscles.",
+    "Type": "Strength",
+    "BodyPart": "Abdominals",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Active hang from bar",
+    "Desc": "Static exercise involving isometrically activating the muscles of the upper back and core while hanging.",
+    "Type": "Strength",
+    "BodyPart": "Abdominals",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Bodyweight squat",
+    "Desc": "A fundamental exercise that strengthens the quads, glutes, and hamstrings.",
+    "Type": "Strength",
+    "BodyPart": "Quadriceps",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Forward lunge",
+    "Desc": "A lower-body bodyweight exercise targeting the quads, glutes, and hamstrings.",
+    "Type": "Strength",
+    "BodyPart": "Quadriceps",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Reverse lunge",
+    "Desc": "Targets the quads, glutes, and hamstrings, with more emphasis on the glutes than forward lunges.",
+    "Type": "Strength",
+    "BodyPart": "Quadriceps",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Walking lunge",
+    "Desc": "Lower-body exercise that targets the glutes, quads, and hamstrings while challenging balance.",
+    "Type": "Strength",
+    "BodyPart": "Quadriceps",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Side-to-side box skip",
+    "Desc": "Explosive lower-body exercise jumping laterally over a bench or box. Cardiovascular challenge.",
+    "Type": "Plyometrics",
+    "BodyPart": "Quadriceps",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Broad jump",
+    "Desc": "An explosive lower-body exercise measuring explosive hip and leg strength.",
+    "Type": "Plyometrics",
+    "BodyPart": "Quadriceps",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Jump squat",
+    "Desc": "An explosive bodyweight exercise targeting the quads, hamstrings, and glutes.",
+    "Type": "Plyometrics",
+    "BodyPart": "Quadriceps",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Split Jump",
+    "Desc": "Explosive bodyweight exercise that targets the lower-body muscles including quads and glutes.",
+    "Type": "Plyometrics",
+    "BodyPart": "Quadriceps",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Step-up with knee raise",
+    "Desc": "Lower-body exercise targeting the quads and glutes with a powerful hip flexion finish.",
+    "Type": "Strength",
+    "BodyPart": "Glutes",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Glute bridge",
+    "Desc": "Popular lower-body exercise primarily targeting the glutes, lower back, and hamstrings.",
+    "Type": "Strength",
+    "BodyPart": "Glutes",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Single-leg glute bridge",
+    "Desc": "A unilateral version of the glute bridge targeting the glutes and hamstrings on one side.",
+    "Type": "Strength",
+    "BodyPart": "Glutes",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Curtsy lunge",
+    "Desc": "Bodyweight movement that targets the muscles of the hips and glutes with a crossing motion.",
+    "Type": "Strength",
+    "BodyPart": "Glutes",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Bulgarian Split Squat",
+    "Desc": "Single-leg exercise targeting the quads, glutes, and hamstrings with the back leg elevated.",
+    "Type": "Strength",
+    "BodyPart": "Quadriceps",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Wall sit",
+    "Desc": "An exercise targeting the quadriceps and core, involving holding a squat position against a wall.",
+    "Type": "Strength",
+    "BodyPart": "Quadriceps",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "High knees",
+    "Desc": "A full-body, cardio-based exercise with an emphasis on the lower body.",
+    "Type": "Cardio",
+    "BodyPart": "Quadriceps",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Lateral lunge",
+    "Desc": "A lower-body movement that works the quads, glutes, and hamstrings in a lateral plane.",
+    "Type": "Strength",
+    "BodyPart": "Quadriceps",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Pop squat",
+    "Desc": "Explosive exercise targeting lower-body muscles, alternating narrow and wide stances.",
+    "Type": "Plyometrics",
+    "BodyPart": "Quadriceps",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Speed skater",
+    "Desc": "Explosive version of the lateral lunge jumping from side to side on a single leg.",
+    "Type": "Plyometrics",
+    "BodyPart": "Quadriceps",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Tuck Jump",
+    "Desc": "Vertical jump where the knees are pulled to the chest. Measures explosive power.",
+    "Type": "Plyometrics",
+    "BodyPart": "Hamstrings",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Pigeon stretch",
+    "Desc": "Lower-body stretch targeting the glutes, hips, and piriformis. Common in yoga.",
+    "Type": "Strength",
+    "BodyPart": "Glutes",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Single-leg box squat",
+    "Desc": "Single-leg squat targeting the quads and glutes using a box to control depth.",
+    "Type": "Strength",
+    "BodyPart": "Quadriceps",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Lateral shuffle",
+    "Desc": "Common sports training exercise involving quick lateral steps to each side.",
+    "Type": "Strength",
+    "BodyPart": "Quadriceps",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Bootstrapper squat",
+    "Desc": "Movement that improves mobility, strength, and flexibility in the hips and hamstrings.",
+    "Type": "Strength",
+    "BodyPart": "Quadriceps",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Wall squat",
+    "Desc": "Exercise targeting the quads and core by sliding the back against a wall.",
+    "Type": "Strength",
+    "BodyPart": "Quadriceps",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Single-leg knee-tap squat",
+    "Desc": "Intense strength and coordination challenge involving a single-leg squat.",
+    "Type": "Strength",
+    "BodyPart": "Quadriceps",
+    "Equipment": "Body Only",
+    "Level": "Expert"
+  },
+  {
+    "Title": "Pushups",
+    "Desc": "Classic upper-body movement to build muscle and strength in the chest, triceps, and shoulders.",
+    "Type": "Strength",
+    "BodyPart": "Chest",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Incline Push-Up",
+    "Desc": "Hands-elevated push-up variation that makes the exercise easier and shifts focus to the lower chest.",
+    "Type": "Strength",
+    "BodyPart": "Chest",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Decline Push-Up",
+    "Desc": "Feet-elevated push-up variation that increases difficulty and targets the upper chest and shoulders.",
+    "Type": "Strength",
+    "BodyPart": "Chest",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Close-Hands Push-Up",
+    "Desc": "Push-up variation that places more emphasis on the triceps and inner chest.",
+    "Type": "Strength",
+    "BodyPart": "Chest",
+    "Equipment": "Body Only",
+    "Level": "Beginner"
+  },
+  {
+    "Title": "Wide Push-Up",
+    "Desc": "Push-up variation with hands wider than shoulder-width, targeting the chest more heavily.",
+    "Type": "Strength",
+    "BodyPart": "Chest",
+    "Equipment": "Body Only",
+    "Level": "Beginner"
+  },
+  {
+    "Title": "Diamond push-up",
+    "Desc": "Advanced variation of the push-up targeting the triceps with hands in a diamond shape.",
+    "Type": "Strength",
+    "BodyPart": "Chest",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Plyo push-up",
+    "Desc": "Bodyweight exercise aimed at increasing upper-body power, strength, and explosiveness.",
+    "Type": "Plyometrics",
+    "BodyPart": "Chest",
+    "Equipment": "Body Only",
+    "Level": "Beginner"
+  },
+  {
+    "Title": "Spider-man push-up",
+    "Desc": "Variation involving pulling the knee to the elbow during the descent of a push-up.",
+    "Type": "Strength",
+    "BodyPart": "Chest",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Typewriter push-up",
+    "Desc": "Advanced push-up variation moving side-to-side at the bottom of a wide push-up position.",
+    "Type": "Strength",
+    "BodyPart": "Chest",
+    "Equipment": "Body Only",
+    "Level": "Beginner"
+  },
+  {
+    "Title": "Sphinx push-up",
+    "Desc": "Difficult push-up variation ending on the forearms to place more stress on the triceps.",
+    "Type": "Strength",
+    "BodyPart": "Chest",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Bench dip",
+    "Desc": "Effective exercise for building the triceps by lowering the hips with hands on a bench.",
+    "Type": "Strength",
+    "BodyPart": "Triceps",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Triceps dip",
+    "Desc": "Bodyweight exercise performed on parallel bars targeting the triceps, chest, and shoulders.",
+    "Type": "Strength",
+    "BodyPart": "Triceps",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Ring dip",
+    "Desc": "Upper-body strength exercise on gymnastic rings targeting the chest, triceps, and shoulders.",
+    "Type": "Strength",
+    "BodyPart": "Triceps",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Scapular push-up",
+    "Desc": "Upper-body exercise aimed at increasing scapular stability and shoulder mobility.",
+    "Type": "Strength",
+    "BodyPart": "Chest",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Hand-release push-up",
+    "Desc": "Variation where hands are momentarily lifted off the ground at the bottom of the rep.",
+    "Type": "Strength",
+    "BodyPart": "Chest",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Pullups",
+    "Desc": "Multi-joint bodyweight exercise that builds strength in the upper back, biceps, and core.",
+    "Type": "Strength",
+    "BodyPart": "Lats",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Chin-Up",
+    "Desc": "Variation of the pull-up with palms facing toward the body, utilizing the biceps more.",
+    "Type": "Strength",
+    "BodyPart": "Lats",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Neutral-grip pull-up",
+    "Desc": "Multi-joint bodyweight exercise performed with palms facing one another for shoulder health.",
+    "Type": "Strength",
+    "BodyPart": "Lats",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Inverted Row",
+    "Desc": "Bodyweight exercise targeting the lats and upper back by pulling toward a bar while hanging.",
+    "Type": "Strength",
+    "BodyPart": "Shoulders",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Handstand push-up",
+    "Desc": "Advanced exercise targeting the shoulders, performed in a vertical handstand position.",
+    "Type": "Strength",
+    "BodyPart": "Shoulders",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Wall walk",
+    "Desc": "Challenging exercise where hands walk back and feet walk up a wall to a handstand.",
+    "Type": "Strength",
+    "BodyPart": "Shoulders",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Bear crawl",
+    "Desc": "Intense full-body movement targeting the cardiovascular system, shoulders, core, and legs.",
+    "Type": "Strength",
+    "BodyPart": "Abdominals",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Superman",
+    "Desc": "Isometric hold in an extended spine position targeting the glutes, erectors, and upper back.",
+    "Type": "Stretching",
+    "BodyPart": "Lower Back",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Bird dog",
+    "Desc": "Core exercise designed to strengthen and stabilize the posterior chain and core.",
+    "Type": "Strength",
+    "BodyPart": "Abdominals",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Arm circle",
+    "Desc": "Non-weighted exercise targeting the shoulders, used commonly for warm-ups.",
+    "Type": "Stretching",
+    "BodyPart": "Shoulders",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Back extension",
+    "Desc": "Exercise used to build lower back strength that also targets the hamstrings and glutes.",
+    "Type": "Strength",
+    "BodyPart": "Lower Back",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Inchworm",
+    "Desc": "Bodyweight exercise involving walking the hands out to a plank and back to a toe-touch.",
+    "Type": "Stretching",
+    "BodyPart": "Hamstrings",
+    "Equipment": "Body Only",
+    "Level": "Beginner"
+  },
+  {
+    "Title": "Y-T-W raises",
+    "Desc": "Upper-body movements that target the shoulders and postural muscles of the back.",
+    "Type": "Strength",
+    "BodyPart": "Shoulders",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Burpee",
+    "Desc": "High-intensity exercise that recruits the entire body to build strength and aerobic capacity.",
+    "Type": "Cardio",
+    "BodyPart": "Quadriceps",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Sprawl",
+    "Desc": "Explosive bodyweight exercise that targets the core, upper body, and lower body.",
+    "Type": "Strength",
+    "BodyPart": "Abdominals",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Crab walk",
+    "Desc": "Full-body exercise that is a coordination challenge and burns serious calories.",
+    "Type": "Strength",
+    "BodyPart": "Abdominals",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Side kick-through",
+    "Desc": "Full-body movement starting in a bear crawl position and kicking a leg out to the side.",
+    "Type": "Strength",
+    "BodyPart": "Abdominals",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Jumping jack",
+    "Desc": "Classic calisthenics exercise used to improve overall conditioning and heart rate.",
+    "Type": "Cardio",
+    "BodyPart": "Quadriceps",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "Shadow boxing",
+    "Desc": "Exercise typically used in combat sports, excellent for cardio and active rest.",
+    "Type": "Cardio",
+    "BodyPart": "Shoulders",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  },
+  {
+    "Title": "World's greatest stretch",
+    "Desc": "Popular movement targeting multiple parts of the body including hips and thoracic spine.",
+    "Type": "Stretching",
+    "BodyPart": "Hamstrings",
+    "Equipment": "Body Only",
+    "Level": "Intermediate"
+  }
+]

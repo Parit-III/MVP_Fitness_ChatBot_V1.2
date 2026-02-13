@@ -14,16 +14,21 @@ import { AuthContext } from "./AuthContext";
    Interfaces
 ======================= */
 
+// ExercisePlans.tsx
 export interface Exercise {
   id: string;
-  duration?: string;
-  name: string;
+  Title: string;      // Changed from 'name'
+  Desc: string;       // Changed from 'description'
+  Type: string;       // New field
+  BodyPart: string;   // New field
+  Equipment: string;  // New field
+  Level: string;      // New field
   sets: number;
   reps: string;
   calories: number;
-  description: string;
   instructions: string[];
   tips: string[];
+  duration?: string;
 }
 
 export interface ExercisePlan {
@@ -238,23 +243,21 @@ export function ExercisePlans({
                           </span>
                         </div>
                       ))} */}
-                      {day.exercises.map((ex: any, eIdx: number) => (
-                        <div
-                          key={eIdx}
-                          onClick={() => {
-                            if (onStartExercise) {
-                              onStartExercise(ex, plan.name);
-                            }
-                          }}
-                          className="cursor-pointer text-xs flex justify-between border-b py-1 last:border-0
-                                    hover:bg-indigo-100 rounded px-2 transition"
+                      {day.exercises.map((ex: any, eIdx: number) => {
+                        // FIND THE FULL OBJECT: Match the plan's string name to the library's Title
+                        const fullExercise = availableExercises?.find(libEx => libEx.Title === ex.name);
+
+                        return (
+                          // Use the data directly from the plan's exercise object
+                        <div 
+                          onClick={() => onStartExercise?.(ex, plan.name)} 
+                          className="..."
                         >
-                          <span>{ex.name}</span>
-                          <span className="font-medium">
-                            {ex.sets}x{ex.reps}
-                          </span>
+                          <span>{ex.Title}</span>
+                          <span>{ex.sets}x{ex.reps}</span>
                         </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   ))}
               </div>

@@ -3,6 +3,7 @@ import { Send, Bot } from "lucide-react";
 import { AuthContext } from "./AuthContext";
 import { doc, getDoc, setDoc, serverTimestamp, onSnapshot } from "firebase/firestore";
 import { db } from "../firebase";
+import { Exercise } from './ExercisePlans';
 
 interface Message {
   id: string;
@@ -15,13 +16,14 @@ interface Message {
 
 interface ChatbotProps {
   userName: string;
+  availableExercises: Exercise[]; 
 }
 
 const CHAT_API_URL = `${import.meta.env.VITE_API_URL}/api/ai/chat`;
 const PLAN_GEN_URL = `${import.meta.env.VITE_API_URL}/api/ai/plan`;
 const PLAN_UPDATE_URL = `${import.meta.env.VITE_API_URL}/api/ai/update-plan`;
 
-export function Chatbot({ userName }: ChatbotProps) {
+export function Chatbot({ userName, availableExercises }: ChatbotProps) {
   // const [isThinking, setIsThinking] = useState(false);// ai กำลังคิด
 
   const { user, loading } = useContext(AuthContext);
@@ -83,7 +85,7 @@ export function Chatbot({ userName }: ChatbotProps) {
       // ยังไม่เคยมี chat → ใส่ welcome เฉพาะ Chat Mode
       setChatMessages([
         {
-          id: Date.now().toString(),
+          id: crypto.randomUUID(),
           text: `Hi ${userName}! 👋 I'm your AI fitness assistant.`,
           senderRole: "bot",
           senderName: "FitPro AI",
@@ -101,7 +103,7 @@ export function Chatbot({ userName }: ChatbotProps) {
     const unsub = onSnapshot(doc(db, "userPlans", user.uid), async (docSnap) => {
       const data = docSnap.data();
       if (!docSnap.exists() || !data?.plans || data.plans.length === 0) {
-        const firstPlan = { id: `plan_${Date.now()}`, name: "MyPlan", difficulty: 'Beginner', days: [] };
+        const firstPlan = { id: crypto.randomUUID(), name: "MyPlan", difficulty: 'Beginner', days: [] };
         await setDoc(doc(db, "userPlans", user.uid), {
           plans: [firstPlan],
           activePlanId: firstPlan.id
@@ -136,7 +138,7 @@ export function Chatbot({ userName }: ChatbotProps) {
     const updated = [
       ...prev,
       {
-        id: Date.now().toString(),
+        id: crypto.randomUUID(),
         text,
         senderRole: "bot" as const,
         senderId: "bot",
@@ -160,7 +162,7 @@ export function Chatbot({ userName }: ChatbotProps) {
   setCurrentMessages(prev => [
     ...prev,
     {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       text,
       senderRole: "system",
       senderId: "system",
@@ -233,7 +235,7 @@ export function Chatbot({ userName }: ChatbotProps) {
 
   // --- 2. PREPARE MESSAGES ---
   const userMsg: Message = { 
-    id: Date.now().toString(), 
+    id: crypto.randomUUID(), 
     text: currentInput, 
     senderRole: "user", 
     senderId: user.uid, 
@@ -252,59 +254,73 @@ export function Chatbot({ userName }: ChatbotProps) {
   );
 
   try {
-    if (toggled) {
-      // --- CHAT MODE ---
-      const res = await fetch(CHAT_API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          messages: newMsgs.map(m => ({ 
-            role: m.senderRole === "user" ? "user" : "assistant", 
-            content: m.text 
-          }))
+    const hydratePlan = (planData: any) => {
+      return planData.days.map((day: any) => ({
+        ...day,
+        exercises: day.exercises.map((planEx: any) => {
+          // Find matching exercise in the library passed via props
+          const fullDetail = availableExercises.find(
+            (libEx) => (libEx.Title || "").toLowerCase() === planEx.name.toLowerCase()
+          );
+
+          if (fullDetail) {
+            // Return full library data but keep the AI-generated sets/reps
+            return {
+              ...fullDetail,
+              sets: planEx.sets || 3,
+              reps: planEx.reps || "12",
+            };
+          }
+          // If not in library, keep the AI version (prevents data loss)
+          return {
+            ...planEx,
+            Title: planEx.name, // Ensure it has a Title field for your UI
+            id: planEx.id || Math.random().toString(36).substr(2, 9)
+          };
         })
-      });
-      const data = await res.json();
-      addBotMessage(data.reply);
+      }));
+    };
 
-    } else if (activePlan) {
-      // --- PLAN MODE ---
-      if (activePlan.days.length === 0) {
-        const fieldNames = ["age", "weight", "height", "goal", "injury", "time", "pref"];
-        const updatedFormData = { ...formData, [fieldNames[planStep]]: currentInput };
-        setFormData(updatedFormData);
+    if (toggled) {
+  // Logic for generating a NEW plan
+        const res = await fetch(PLAN_GEN_URL, { /* your existing fetch config */ });
+        const result = await res.json();
 
-        if (planStep < questions.length - 1) {
-          addBotMessage(questions[planStep + 1]);
-          setPlanStep(planStep + 1);
-        } else {
-          addBotMessage("Generating your custom plan using our exercise database... 🏋️‍♂️");
-          const res = await fetch(PLAN_GEN_URL, { 
-            method: "POST", 
-            headers: { "Content-Type": "application/json" }, 
-            body: JSON.stringify(updatedFormData) 
-          });
-          const result = await res.json();
+        if (result.plan) {
+          // HYDRATE the plan before saving
+          const hydratedDays = hydratePlan(result.plan);
           
-          const updated = allPlans.map(p => p.id === activePlan.id ? { ...p, days: result.plan.days } : p);
-          await setDoc(doc(db, "userPlans", user.uid), { plans: updated }, { merge: true });
-          addBotMessage(`Success! "${activePlan.name}" is ready.`);
-          setPlanStep(0);
+          const newPlan = {
+            ...result.plan,
+            days: hydratedDays,
+            id: Date.now().toString(),
+            createdAt: new Date().toISOString()
+          };
+
+          // Save full data to Firestore
+          await setDoc(doc(db, "userPlans", user.uid), { 
+            plans: [...allPlans, newPlan] 
+          }, { merge: true });
         }
       } else {
-        // --- UPDATE EXISTING PLAN ---
-        addBotMessage("Updating plan... 🔄");
-        const res = await fetch(PLAN_UPDATE_URL, { 
-          method: "POST", 
-          headers: { "Content-Type": "application/json" }, 
-          body: JSON.stringify({ currentPlan: { days: activePlan.days }, instruction: currentInput }) 
-        });
+        // Logic for UPDATING the active plan
+        const res = await fetch(PLAN_UPDATE_URL, { /* your existing fetch config */ });
         const result = await res.json();
-        const updated = allPlans.map(p => p.id === activePlan.id ? { ...p, days: result.plan.days } : p);
-        await setDoc(doc(db, "userPlans", user.uid), { plans: updated }, { merge: true });
-        addBotMessage("Your plan has been updated based on your request!");
+
+        if (result.plan && activePlan) {
+          // HYDRATE the updated plan before saving
+          const hydratedDays = hydratePlan(result.plan);
+
+          const updatedPlans = allPlans.map(p => 
+            p.id === activePlan.id ? { ...p, days: hydratedDays } : p
+          );
+
+          // Save updated full data to Firestore
+          await setDoc(doc(db, "userPlans", user.uid), { 
+            plans: updatedPlans 
+          }, { merge: true });
+        }
       }
-    }
   } catch (err) { 
     addBotMessage("I'm sorry, I'm having trouble connecting to the server. Please try again."); 
   }

@@ -10,26 +10,20 @@ export async function getExercises(): Promise<Exercise[]> {
 
     return {
       id: doc.id,
-      name: data.title ?? "Unknown Exercise",
+      // Match the exact keys you pushed to Firebase
+      Title: data.Title || "Unknown Exercise", 
+      Desc: data.Desc || "",
+      Type: data.Type || "Strength",
+      BodyPart: data.BodyPart || "N/A",
+      Equipment: data.Equipment || "N/A",
+      Level: data.Level || "Intermediate",
+      
+      // Default values for workout logic
       sets: 3,
       reps: "8-12",
       calories: 60,
-      description: extractDescription(data.text),
-      instructions: [
-        `Body part: ${data.bodyPart ?? "N/A"}`,
-        `Equipment: ${data.equipment ?? "N/A"}`
-      ],
-      tips: [
-        `Level: ${data.level ?? "N/A"}`,
-        `Type: ${data.type ?? "Strength"}` // fallback สมเหตุสมผล
-      ]
+      instructions: data.instructions || [], // Use the instructions array if it exists
+      tips: data.tips || []
     };
   });
 }
-function extractDescription(text?: string): string {
-  if (!text) return "";
-
-  const match = text.match(/Description:\s*(.*?)\s*(Type:|Body Part:|Equipment:|Level:|$)/i);
-  return match ? match[1].trim() : "";
-}
-

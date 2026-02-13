@@ -138,7 +138,7 @@ router.post("/plan", async (req, res) => {
   - Return ONLY valid JSON (Very Important)
   - English only
   - No explanation text
-  - Only use Exercise from following list
+  - Only use Exercise name from the following list
 
   Exercise List:
   ${contextText}
@@ -231,6 +231,7 @@ You are updating a workout plan.
 You are a professional personal trainer.
 STRICT RULES:
 - Never remove all exercises from a day
+- If user need more exercises keep current plan and add more what user request
 - If an exercise is removed, REPLACE it with a suitable alternative
 - Keep at least 2–4 exercises per day
 - Match replacement exercises to the user's goal

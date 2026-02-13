@@ -14,7 +14,7 @@ export function ExerciseDetailModal({ exercise, onClose }: ExerciseDetailModalPr
         <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-6 text-white">
           <div className="flex items-start justify-between mb-4">
             <div className="flex-1">
-              <h2 className="text-3xl font-bold mb-2">{exercise.name}</h2>
+              <h2 className="text-3xl font-bold mb-2">{exercise.Title}</h2>
               <div className="flex items-center gap-4 text-indigo-100">
                 <div className="flex items-center gap-2">
                   <Repeat className="w-4 h-4" />
@@ -46,7 +46,7 @@ export function ExerciseDetailModal({ exercise, onClose }: ExerciseDetailModalPr
           {/* Description */}
           <div>
             <h3 className="text-xl font-bold text-gray-900 mb-3">Description</h3>
-            <p className="text-gray-700 leading-relaxed">{exercise.description}</p>
+            <p className="text-gray-700 leading-relaxed">{exercise.Desc}</p>
           </div>
 
           {/* Video placeholder */}

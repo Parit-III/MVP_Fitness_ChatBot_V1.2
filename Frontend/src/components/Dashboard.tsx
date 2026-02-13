@@ -7,7 +7,7 @@ import { Exercise } from './ExercisePlans';
 import { getExercises } from "../services/exerciseService";
 import { WorkoutLibrary } from "./WorkoutLibrary";
 import { ExerciseDetail } from "./ExerciseDetail";
-import { doc, getDoc, setDoc, serverTimestamp, onSnapshot } from "firebase/firestore";
+import { doc, collection, query, setDoc, serverTimestamp, onSnapshot, limit } from "firebase/firestore";
 import { db } from "../firebase";
 
 interface DashboardProps {
@@ -30,17 +30,40 @@ const [completedWorkouts, setCompletedWorkouts] = useState<WorkoutStreak[]>([]);
 
   // Exercise library
 const [exerciseLibrary, setExerciseLibrary] = useState<Exercise[]>([]);
-useEffect(() => {
-  const fetchExercises = async () => {
-    try {
-      const data = await getExercises();
-      setExerciseLibrary(data);
-    } catch (error) {
-      console.error("Failed to load exercises:", error);
-    }
-  };
+// Dashboard.tsx
 
-  fetchExercises();
+useEffect(() => {
+  // 1. Reference the collection
+  const q = query(collection(db, "exercises"));
+  
+  // 2. Use onSnapshot for real-time updates
+  const unsubscribe = onSnapshot(q, (snapshot) => {
+    const exercises = snapshot.docs.map(doc => {
+      const data = doc.data();
+      
+      // IMPORTANT: Apply the same mapping here as you did in your service
+      return {
+        id: doc.id,
+        Title: data.Title || data.title || "Unknown Exercise",
+        Desc: data.Desc || data.description || "",
+        Type: data.Type || "Strength",
+        BodyPart: data.BodyPart || "N/A",
+        Equipment: data.Equipment || "N/A",
+        Level: data.Level || "Intermediate",
+        // Add default values for the UI logic
+        sets: data.sets || 3,
+        reps: data.reps || "8-12",
+        calories: data.calories || 60,
+        instructions: data.instructions || [],
+        tips: data.tips || []
+      } as Exercise;
+    });
+
+    console.log("Library Updated:", exercises);
+    setExerciseLibrary(exercises);
+  });
+
+  return () => unsubscribe();
 }, []);
 
   // Inside Dashboard.tsx
@@ -156,7 +179,8 @@ const handleWorkoutComplete = async (date: string) => {
         {view === 'chat' ? (
           <div className="flex-1 flex items-center justify-center p-4">
             <div className="w-full max-w-4xl h-[calc(100vh-120px)] bg-white rounded-2xl shadow-xl flex flex-col">
-              <Chatbot userName={user.name} /> 
+              <Chatbot userName={user.name}
+                availableExercises={exerciseLibrary} /> 
               {/* onPlanCreated={handlePlanCreated} */}
             </div>
           </div>
@@ -168,7 +192,7 @@ const handleWorkoutComplete = async (date: string) => {
   onStartExercise={(exerciseFromPlan, planName) => {
     // ค้นหาข้อมูลท่าออกกำลังกายตัวเต็มจาก Library
     const fullExercise = exerciseLibrary.find(
-      ex => ex.name === exerciseFromPlan.name
+      ex => ex.Title === exerciseFromPlan.Title
     );
 
     if (fullExercise) {
@@ -180,7 +204,7 @@ const handleWorkoutComplete = async (date: string) => {
       setSelectedExercise({
         ...exerciseFromPlan,
         id: exerciseFromPlan.id || Date.now().toString(),
-        description: exerciseFromPlan.description || "",
+        description: exerciseFromPlan.Desc || "",
         instructions: exerciseFromPlan.instructions || [],
         tips: exerciseFromPlan.tips || [],
         calories: exerciseFromPlan.calories || 0

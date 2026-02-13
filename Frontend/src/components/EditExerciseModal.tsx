@@ -9,29 +9,29 @@ interface EditExerciseModalProps {
 }
 
 export function EditExerciseModal({ exercise, onSave, onClose }: EditExerciseModalProps) {
-  const [name, setName] = useState(exercise.name);
+  const [title, setTitle] = useState(exercise.Title);
   const [sets, setSets] = useState(exercise.sets.toString());
   const [reps, setReps] = useState(exercise.reps);
   const [duration, setDuration] = useState(exercise.duration || '');
   const [calories, setCalories] = useState(exercise.calories.toString());
-  const [description, setDescription] = useState(exercise.description);
+  const [description, setDescription] = useState(exercise.Desc);
   const [instructions, setInstructions] = useState(exercise.instructions.join('\n'));
   const [tips, setTips] = useState(exercise.tips.join('\n'));
 
   const handleSave = () => {
-    if (!name || !sets || !reps || !calories) {
+    if (!title || !sets || !reps || !calories) {
       alert('Please fill in all required fields');
       return;
     }
 
     const updatedExercise: Exercise = {
       ...exercise,
-      name,
+      Title: title,
       sets: parseInt(sets),
       reps,
       duration: duration || undefined,
       calories: parseInt(calories),
-      description,
+      Desc: description,
       instructions: instructions.split('\n').filter(i => i.trim()),
       tips: tips.split('\n').filter(t => t.trim()),
     };
@@ -62,8 +62,8 @@ export function EditExerciseModal({ exercise, onSave, onClose }: EditExerciseMod
             </label>
             <input
               type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               placeholder="e.g., Push-ups"
             />

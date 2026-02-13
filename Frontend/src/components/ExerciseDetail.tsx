@@ -112,7 +112,7 @@ const estimateRepTime = (reps: string | number | undefined | null): number => {
 
 // ในไฟล์ ExerciseDetail.tsx
 const handleMarkComplete = async () => {
-  if (!userId || !exercise?.name) return;
+  if (!userId || !exercise?.Title) return;
 
   try {
     const todayStr = new Date().toISOString().split('T')[0];
@@ -125,7 +125,7 @@ const handleMarkComplete = async () => {
       {
         completed: true,
         timestamp: serverTimestamp(),
-        exerciseName: exercise.name,
+        exerciseName: exercise.Title,
         planName: planName,
       },
       { merge: true }
@@ -161,7 +161,7 @@ const handleMarkComplete = async () => {
         {/* Header */}
         <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-8 text-white">
           <p className="text-indigo-100 mb-2">{planName}</p>
-          <h1 className="text-4xl font-bold mb-4">{exercise.name}</h1>
+          <h1 className="text-4xl font-bold mb-4">{exercise.Title}</h1>
           
           <div className="flex items-center gap-6 text-indigo-100">
             <div className="flex items-center gap-2">
@@ -275,7 +275,7 @@ const handleMarkComplete = async () => {
           {/* Description */}
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-3">Description</h2>
-            <p className="text-gray-700 leading-relaxed">{exercise.description}</p>
+            <p className="text-gray-700 leading-relaxed">{exercise.Desc}</p>
           </div>
 
           {/* Instructions */}
