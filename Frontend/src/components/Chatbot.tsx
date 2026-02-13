@@ -139,14 +139,13 @@ export function Chatbot({ userName, availableExercises}: ChatbotProps) {
     let modeText = "";
     if (toggled) {
       modeText = "Switched to Chat Mode.";
+    } else if (activePlan.days && activePlan.days.length > 0) {
+      modeText = `Your plan is already created please switch to a blank plan!".`;
+      setTimeout(() => {
+        setToggled(true); // สลับกลับไปหน้า Chat อัตโนมัติใน 5 วินาที
+      }, 5000);
     } else {
-      if (!activePlan) {
-        modeText = "⚠️ Set an active plan first.";
-      } else if (activePlan.days && activePlan.days.length > 0) {
-        modeText = `Plan Mode: Updating "${activePlan.name}".`;
-      } else {
-        modeText = `Plan Mode: Filling "${activePlan.name}". ${questions[0]}`;
-      }
+      modeText = `Plan Mode: Filling "${activePlan.name}". ${questions[0]}`;
     }
     addSystemMessage(modeText);
   }, [toggled]);
@@ -319,26 +318,6 @@ export function Chatbot({ userName, availableExercises}: ChatbotProps) {
           addBotMessage(`Success! "${activePlan.name}" is ready.`);
           setPlanStep(0);
         }
-      } else {
-        // --- UPDATE EXISTING PLAN ---
-        addBotMessage("Updating plan... 🔄");
-        const res = await fetch(PLAN_UPDATE_URL, { 
-          method: "POST", 
-          headers: { "Content-Type": "application/json" }, 
-          body: JSON.stringify({ currentPlan: { days: activePlan.days }, instruction: currentInput }) 
-        });
-        const result = await res.json();
-        const updated = allPlans.map(p => {
-          if (p.id === activePlan.id) {
-            return { 
-              ...p, 
-              days: result.plan.days // result.plan.days ตอนนี้จะมีข้อมูลครบจาก Backend แล้ว
-            };
-          }
-          return p;
-        });
-        await setDoc(doc(db, "userPlans", user.uid), { plans: updated }, { merge: true });
-        addBotMessage("Your plan has been updated based on your request!");
       }
     }
   } catch (err) { 
