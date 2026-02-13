@@ -93,12 +93,15 @@ const findSimilarExercisesLocal = async (queryVector, limit = 5, avoidPart = "No
 /* ========================= */
 /* ===== GENERATE PLAN ===== */
 /* ========================= */
+/* ========================= */
+/* ===== GENERATE PLAN ===== */
+/* ========================= */
 router.post("/plan", async (req, res) => {
   console.log("📩 /plan called");
   const { age, weight, height, goal, injury, time, pref } = req.body;
 
-  try{
-
+  try {
+    // --- ส่วนเดิมของคุณทั้งหมด (ห้ามแก้) ---
     const analysisPrompt = `
       The user says they have this injury: "${injury}" or preference: "${pref}".
       Which body part should they avoid exercising? 
@@ -116,18 +119,13 @@ router.post("/plan", async (req, res) => {
     ]);
     console.log(`🚫 AI decided to avoid: ${avoidPart}`);
 
-    // 1. Get vector for user's goal + preference
     const userVector = await embedText(`${goal} ${pref}`);
     const topExercises = await findSimilarExercisesLocal(userVector, 7, avoidPart.trim());
 
-    // ค. สร้าง Context (เหมือนเดิม)
     const contextText = topExercises.map(ex => 
       `---\nExercise: ${ex.Title}\nFocus: ${ex.BodyPart}\nDescription: ${ex.Desc}`
     ).join("\n\n");
 
-    console.log("--- DEBUG: RAG CONTEXT START ---");
-    console.log(contextText || "⚠️ No matching exercises found!");
-    console.log("--- DEBUG: RAG CONTEXT END ---");
     const prompt = `
   You are a professional personal trainer.
   You are creating a workout plan (5 days Monday-Friday).
@@ -172,6 +170,29 @@ router.post("/plan", async (req, res) => {
 
     const cleanJson = content.replace(/```json|```/g, "").trim();
     const plan = JSON.parse(cleanJson);
+
+    // ✅ ส่วนที่เพิ่มตามสั่ง: Mapping ข้อมูลจาก Exe.json เข้าไปใน plan
+    plan.days = plan.days.map(day => ({
+      ...day,
+      exercises: day.exercises.map(aiEx => {
+        // หาข้อมูลจากไฟล์ Exe.json (ที่โหลดไว้ใน exercisesData)
+        const masterData = exercisesData.find(ex => ex.Title.toLowerCase() === aiEx.name.toLowerCase());
+        
+        if (masterData) {
+          return {
+            ...aiEx, // { name, sets, reps }
+            bodyPart: masterData.BodyPart,
+            desc: masterData.Desc,
+            equipment: masterData.Equipment,
+            level: masterData.Level,
+            type: masterData.Type
+          };
+        }
+        return aiEx;
+      })
+    }));
+
+    // ส่งผลลัพธ์กลับ (โครงสร้างเดิมแต่ข้อมูลใน exercises เยอะขึ้น)
     res.json({ plan });
 
   } catch (err) {
@@ -223,6 +244,9 @@ Rules:
 /* ========================= */
 /* ===== UPDATE PLAN ======= */
 /* ========================= */
+/* ========================= */
+/* ===== UPDATE PLAN ======= */
+/* ========================= */
 router.post("/update-plan", async (req, res) => {
   const { currentPlan, instruction } = req.body;
 
@@ -268,6 +292,28 @@ OUTPUT FORMAT EXACTLY:
 
     const cleanJson = content.replace(/```json|```/g, "").trim();
     const plan = JSON.parse(cleanJson);
+
+    // ✅ เพิ่มเฉพาะส่วนที่ดึงข้อมูล Master มาแปะ (ไม่ยุ่งกับ Prompt)
+    plan.days = plan.days.map(day => ({
+      ...day,
+      exercises: day.exercises.map(aiEx => {
+        // หาข้อมูลจากไฟล์ Exe.json (ที่โหลดไว้ใน exercisesData)
+        const masterData = exercisesData.find(ex => ex.Title.toLowerCase() === aiEx.name.toLowerCase());
+        
+        if (masterData) {
+          return {
+            ...aiEx, // { name, sets, reps }
+            bodyPart: masterData.BodyPart,
+            desc: masterData.Desc,
+            equipment: masterData.Equipment,
+            level: masterData.Level,
+            type: masterData.Type
+          };
+        }
+        return aiEx;
+      })
+    }));
+
     res.json({ plan });
   } catch (err) {
     console.error("UPDATE ERROR:", err.message);

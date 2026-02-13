@@ -187,31 +187,24 @@ const handleWorkoutComplete = async (date: string) => {
         ) : view === 'plans' ? (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
             // ใน Dashboard.tsx
+// ✅ แก้ไขฟังก์ชัน onStartExercise
 <ExercisePlans
   availableExercises={exerciseLibrary}
   onStartExercise={(exerciseFromPlan, planName) => {
-    // ค้นหาข้อมูลท่าออกกำลังกายตัวเต็มจาก Library
-    const fullExercise = exerciseLibrary.find(
-      ex => ex.Title === exerciseFromPlan.Title
-    );
+    // ข้อมูลจาก Plan (exerciseFromPlan) ตอนนี้มีข้อมูล Master ติดมาด้วยแล้ว
+    // สร้าง Object ที่สมบูรณ์จากข้อมูลใน Plan ได้เลย
+    const exerciseToView = {
+      ...exerciseFromPlan,
+      // Mapping ชื่อฟิลด์ให้ตรงกับที่ Component ปลายทางต้องการ
+      Title: exerciseFromPlan.Title || exerciseFromPlan.name,
+      Desc: exerciseFromPlan.Desc || exerciseFromPlan.desc,
+      BodyPart: exerciseFromPlan.BodyPart || exerciseFromPlan.bodyPart,
+      id: exerciseFromPlan.id || `ex_${Date.now()}`
+    } as Exercise;
 
-    if (fullExercise) {
-      setSelectedExercise(fullExercise);
-      setSelectedPlanName(planName);
-      setView('exercise');
-    } else {
-      // ถ้าหาไม่เจอ ให้ใช้ข้อมูลเท่าที่มีจาก Plan ไปก่อนเพื่อไม่ให้ name เป็น undefined
-      setSelectedExercise({
-        ...exerciseFromPlan,
-        id: exerciseFromPlan.id || Date.now().toString(),
-        description: exerciseFromPlan.Desc || "",
-        instructions: exerciseFromPlan.instructions || [],
-        tips: exerciseFromPlan.tips || [],
-        calories: exerciseFromPlan.calories || 0
-      } as Exercise);
-      setSelectedPlanName(planName);
-      setView('exercise');
-    }
+    setSelectedExercise(exerciseToView);
+    setSelectedPlanName(planName);
+    setView('exercise');
   }}
 />
 

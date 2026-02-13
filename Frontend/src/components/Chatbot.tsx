@@ -13,15 +13,35 @@ interface Message {
   timestamp: Date;
 }
 
+export interface Exercise {
+  id: string;
+  Title: string;
+  Desc: string;
+  Type: string;
+  BodyPart: string;
+  Equipment: string;
+  Level: string;
+  sets: number;
+  reps: string;
+  calories: number;
+  instructions: string[];
+  tips: string[];
+  duration?: string;
+  name?: string; 
+  bodyPart?: string;
+  desc?: string;
+}
+
 interface ChatbotProps {
   userName: string;
+  availableExercises?: Exercise[];
 }
 
 const CHAT_API_URL = `${import.meta.env.VITE_API_URL}/api/ai/chat`;
 const PLAN_GEN_URL = `${import.meta.env.VITE_API_URL}/api/ai/plan`;
 const PLAN_UPDATE_URL = `${import.meta.env.VITE_API_URL}/api/ai/update-plan`;
 
-export function Chatbot({ userName, availableExercises }: ChatbotProps) {
+export function Chatbot({ userName, availableExercises}: ChatbotProps) {
   // const [isThinking, setIsThinking] = useState(false);// ai กำลังคิด
 
   const { user, loading } = useContext(AuthContext);
@@ -286,7 +306,15 @@ export function Chatbot({ userName, availableExercises }: ChatbotProps) {
           });
           const result = await res.json();
           
-          const updated = allPlans.map(p => p.id === activePlan.id ? { ...p, days: result.plan.days } : p);
+          const updated = allPlans.map(p => {
+            if (p.id === activePlan.id) {
+              return { 
+                ...p, 
+                days: result.plan.days // result.plan.days ตอนนี้จะมีข้อมูลครบจาก Backend แล้ว
+              };
+            }
+            return p;
+          });
           await setDoc(doc(db, "userPlans", user.uid), { plans: updated }, { merge: true });
           addBotMessage(`Success! "${activePlan.name}" is ready.`);
           setPlanStep(0);
@@ -300,7 +328,15 @@ export function Chatbot({ userName, availableExercises }: ChatbotProps) {
           body: JSON.stringify({ currentPlan: { days: activePlan.days }, instruction: currentInput }) 
         });
         const result = await res.json();
-        const updated = allPlans.map(p => p.id === activePlan.id ? { ...p, days: result.plan.days } : p);
+        const updated = allPlans.map(p => {
+          if (p.id === activePlan.id) {
+            return { 
+              ...p, 
+              days: result.plan.days // result.plan.days ตอนนี้จะมีข้อมูลครบจาก Backend แล้ว
+            };
+          }
+          return p;
+        });
         await setDoc(doc(db, "userPlans", user.uid), { plans: updated }, { merge: true });
         addBotMessage("Your plan has been updated based on your request!");
       }

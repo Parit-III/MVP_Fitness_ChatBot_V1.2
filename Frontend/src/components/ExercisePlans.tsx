@@ -29,6 +29,10 @@ export interface Exercise {
   instructions: string[];
   tips: string[];
   duration?: string;
+  // ✅ เพิ่มฟิลด์รองรับชื่อที่อาจจะมาจาก Backend
+  name?: string; 
+  bodyPart?: string;
+  desc?: string;
 }
 
 export interface ExercisePlan {
@@ -244,18 +248,21 @@ export function ExercisePlans({
                         </div>
                       ))} */}
                       {day.exercises.map((ex: any, eIdx: number) => {
-                        // FIND THE FULL OBJECT: Match the plan's string name to the library's Title
-                        const fullExercise = availableExercises?.find(libEx => libEx.Title === ex.name);
-
                         return (
-                          // Use the data directly from the plan's exercise object
-                        <div 
-                          onClick={() => onStartExercise?.(ex, plan.name)} 
-                          className="..."
-                        >
-                          <span>{ex.Title}</span>
-                          <span>{ex.sets}x{ex.reps}</span>
-                        </div>
+                          <div 
+                            key={eIdx}
+                            onClick={() => onStartExercise?.(ex, plan.name)} 
+                            className="text-xs flex justify-between border-b py-2 last:border-0 cursor-pointer hover:bg-indigo-100 px-1 rounded transition-colors"
+                          >
+                            {/* ใช้ ex.Title หรือ ex.name ตามที่ Backend ส่งมา */}
+                            <div className="flex flex-col">
+                              <span className="font-bold">{ex.Title || ex.name}</span>
+                              <span className="text-[10px] text-gray-500">{ex.BodyPart || ex.bodyPart}</span>
+                            </div>
+                            <span className="font-medium text-indigo-600">
+                              {ex.sets}x{ex.reps}
+                            </span>
+                          </div>
                         );
                       })}
                     </div>

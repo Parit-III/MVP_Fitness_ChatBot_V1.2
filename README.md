@@ -20,15 +20,10 @@ MVP_Fitness_ChatBot_V1.2
 │  ├─ .env
 │  ├─ data
 │  │  └─ Exe.json
-│  ├─ embed_service.py
-│  ├─ firebase.js
-│  ├─ get_vector.py
 │  ├─ package-lock.json
 │  ├─ package.json
 │  ├─ routes
 │  │  └─ ai.js
-│  ├─ scripts
-│  │  └─ generate_vectors.js
 │  └─ server.js
 ├─ Frontend
 │  ├─ .env
@@ -129,6 +124,17 @@ MVP_Fitness_ChatBot_V1.2
 │  │  └─ vite-env.d.ts
 │  └─ vite.config.ts
 ├─ package-lock.json
-└─ README.md
+├─ README.md
+├─ scripts
+│  ├─ generate_vectors.js
+│  ├─ package-lock.json
+│  ├─ package.json
+│  └─ ReadME.txt
+└─ upload
+   ├─ .env
+   ├─ exercises.json
+   ├─ package-lock.json
+   ├─ package.json
+   └─ upload.js
 
 ```
