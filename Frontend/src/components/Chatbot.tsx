@@ -27,7 +27,7 @@ export interface Exercise {
   instructions: string[];
   tips: string[];
   duration?: string;
-  name?: string; 
+  name?: string;
   bodyPart?: string;
   desc?: string;
 }
@@ -41,7 +41,7 @@ const CHAT_API_URL = `${import.meta.env.VITE_API_URL}/api/ai/chat`;
 const PLAN_GEN_URL = `${import.meta.env.VITE_API_URL}/api/ai/plan`;
 const PLAN_UPDATE_URL = `${import.meta.env.VITE_API_URL}/api/ai/update-plan`;
 
-export function Chatbot({ userName, availableExercises}: ChatbotProps) {
+export function Chatbot({ userName, availableExercises }: ChatbotProps) {
   // const [isThinking, setIsThinking] = useState(false);// ai กำลังคิด
 
   const { user, loading } = useContext(AuthContext);
@@ -55,7 +55,7 @@ export function Chatbot({ userName, availableExercises}: ChatbotProps) {
   const [activePlan, setActivePlan] = useState<any>(null);
   const [allPlans, setAllPlans] = useState<any[]>([]);
   const [planStep, setPlanStep] = useState(0);
-  const [formData, setFormData] = useState({ age: "", weight: "", height: "", goal: "", injury: "", time: "", pref:""});
+  const [formData, setFormData] = useState({ age: "", weight: "", height: "", goal: "", injury: "", time: "", daysPerWeek: "", pref: "" });
 
   const questions = [
     "What is your age?",
@@ -64,57 +64,58 @@ export function Chatbot({ userName, availableExercises}: ChatbotProps) {
     "What is your fitness goal (e.g., lose weight, build muscle)?",
     "Do you have any injuries? (Type 'none' if not)",
     "How many minutes per day can you exercise?",
+    "How many workout days per week?",
     "Additional Preference?"
   ];
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-  messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-}, [currentMessages]); // new
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [currentMessages]); // new
 
   useEffect(() => {
-  if (!user) return;
+    if (!user) return;
 
-  const loadChat = async () => {
-    const snap = await getDoc(doc(db, "chats", user.uid));
+    const loadChat = async () => {
+      const snap = await getDoc(doc(db, "chats", user.uid));
 
-    if (snap.exists()) {
-      const data = snap.data();
+      if (snap.exists()) {
+        const data = snap.data();
 
-      if (data.chatMessages) {
-        setChatMessages(
-          data.chatMessages.map((m: any) => ({
-            ...m,
-            timestamp: new Date(m.timestamp),
-          }))
-        );
+        if (data.chatMessages) {
+          setChatMessages(
+            data.chatMessages.map((m: any) => ({
+              ...m,
+              timestamp: new Date(m.timestamp),
+            }))
+          );
+        }
+
+        if (data.planMessages) {
+          setPlanMessages(
+            data.planMessages.map((m: any) => ({
+              ...m,
+              timestamp: new Date(m.timestamp),
+            }))
+          );
+        }
+      } else {
+        // ยังไม่เคยมี chat → ใส่ welcome เฉพาะ Chat Mode
+        setChatMessages([
+          {
+            id: Date.now().toString(),
+            text: `Hi ${userName}! 👋 I'm your AI fitness assistant.`,
+            senderRole: "bot",
+            senderName: "FitPro AI",
+            timestamp: new Date(),
+          },
+        ]);
       }
+    };
 
-      if (data.planMessages) {
-        setPlanMessages(
-          data.planMessages.map((m: any) => ({
-            ...m,
-            timestamp: new Date(m.timestamp),
-          }))
-        );
-      }
-    } else {
-      // ยังไม่เคยมี chat → ใส่ welcome เฉพาะ Chat Mode
-      setChatMessages([
-        {
-          id: Date.now().toString(),
-          text: `Hi ${userName}! 👋 I'm your AI fitness assistant.`,
-          senderRole: "bot",
-          senderName: "FitPro AI",
-          timestamp: new Date(),
-        },
-      ]);
-    }
-  };
-
-  loadChat();
-}, [user]); // new
+    loadChat();
+  }, [user]); // new
 
   useEffect(() => {
     if (!user) return;
@@ -152,199 +153,207 @@ export function Chatbot({ userName, availableExercises}: ChatbotProps) {
   }, [toggled]);
 
   const addBotMessage = (text: string) => {
-  setCurrentMessages(prev => {
-    const updated = [
+    setCurrentMessages(prev => {
+      const updated = [
+        ...prev,
+        {
+          id: Date.now().toString(),
+          text,
+          senderRole: "bot" as const,
+          senderId: "bot",
+          senderName: "FitPro AI",
+          timestamp: new Date(),
+        },
+      ];
+
+      // ✅ save เฉพาะ bot / user เท่านั้น
+      saveChatHistory(
+        toggled ? updated : chatMessages,
+        toggled ? planMessages : updated
+      );
+
+      return updated;
+    });
+  };
+
+
+  const addSystemMessage = (text: string) => {
+    setCurrentMessages(prev => [
       ...prev,
       {
         id: Date.now().toString(),
         text,
-        senderRole: "bot" as const,
-        senderId: "bot",
-        senderName: "FitPro AI",
+        senderRole: "system",
+        senderId: "system",
+        senderName: "System",
         timestamp: new Date(),
-      },
-    ];
-
-    // ✅ save เฉพาะ bot / user เท่านั้น
-    saveChatHistory(
-      toggled ? updated : chatMessages,
-      toggled ? planMessages : updated
-    );
-
-    return updated;
-  });
-};
-
-
-  const addSystemMessage = (text: string) => {
-  setCurrentMessages(prev => [
-    ...prev,
-    {
-      id: Date.now().toString(),
-      text,
-      senderRole: "system",
-      senderId: "system",
-      senderName: "System",
-      timestamp: new Date(),
-    }
-  ]);
-};
-
-  
-  const saveChatHistory = async (
-  chatMsgs: Message[],
-  planMsgs: Message[]
-) => {
-  if (!user) return;
-
-  await setDoc(doc(db, "chats", user.uid), {
-    chatMessages: chatMsgs.map(m => ({ ...m, timestamp: m.timestamp.getTime() })),
-    planMessages: planMsgs.map(m => ({ ...m, timestamp: m.timestamp.getTime() })),
-    updatedAt: serverTimestamp()
-  }, { merge: true });
-}; // new
-  const handleSendMessage = async () => {
-  if (loading || !user || !inputText.trim()) return;
-  
-  const currentInput = inputText.trim();
-  
-  // --- 1. VALIDATION LOGIC FOR PLAN MODE ---
-  if (!toggled && activePlan && activePlan.days.length === 0) {
-    let isValid = true;
-    let errorMsg = "";
-
-    switch (planStep) {
-      case 0: // Age
-        const age = parseInt(currentInput);
-        if (isNaN(age) || age < 10 || age > 100) {
-          isValid = false;
-          errorMsg = "Please enter a valid age (10-100).";
-        }
-        break;
-      case 1: // Weight
-      case 2: // Height
-        const val = parseFloat(currentInput);
-        if (isNaN(val) || val <= 0) {
-          isValid = false;
-          errorMsg = "Please enter a valid positive number.";
-        }
-        break;
-      case 3: // Goal
-      case 6: // Preference
-        if (currentInput.length < 3) {
-          isValid = false;
-          errorMsg = "Please be a bit more descriptive.";
-        }
-        break;
-      case 5: // Time
-        const mins = parseInt(currentInput);
-        if (isNaN(mins) || mins < 5 || mins > 300) {
-          isValid = false;
-          errorMsg = "Please enter minutes between 5 and 300.";
-        }
-        break;
-    }
-
-    if (!isValid) {
-      addBotMessage(`⚠️ ${errorMsg}`);
-      return; // Stop execution here
-    }
-  }
-
-  // --- 2. PREPARE MESSAGES ---
-  const userMsg: Message = { 
-    id: Date.now().toString(), 
-    text: currentInput, 
-    senderRole: "user", 
-    senderId: user.uid, 
-    senderName: user.displayName || "User", 
-    timestamp: new Date() 
+      }
+    ]);
   };
 
-  const newMsgs = [...currentMessages, userMsg];
-  setCurrentMessages(newMsgs);
-  setInputText("");
-  
-  // Save to Firebase immediately
-  saveChatHistory(
-    toggled ? newMsgs : chatMessages,
-    toggled ? planMessages : newMsgs
-  );
 
-  try {
-    if (toggled) {
-      // --- CHAT MODE ---
-      const res = await fetch(CHAT_API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          messages: newMsgs.map(m => ({ 
-            role: m.senderRole === "user" ? "user" : "assistant", 
-            content: m.text 
-          }))
-        })
-      });
-      const data = await res.json();
-      addBotMessage(data.reply);
+  const saveChatHistory = async (
+    chatMsgs: Message[],
+    planMsgs: Message[]
+  ) => {
+    if (!user) return;
 
-    } else if (activePlan) {
-      // --- PLAN MODE ---
-      if (activePlan.days.length === 0) {
-        const fieldNames = ["age", "weight", "height", "goal", "injury", "time", "pref"];
-        const updatedFormData = { ...formData, [fieldNames[planStep]]: currentInput };
-        setFormData(updatedFormData);
+    await setDoc(doc(db, "chats", user.uid), {
+      chatMessages: chatMsgs.map(m => ({ ...m, timestamp: m.timestamp.getTime() })),
+      planMessages: planMsgs.map(m => ({ ...m, timestamp: m.timestamp.getTime() })),
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+  }; // new
+  const handleSendMessage = async () => {
+    if (loading || !user || !inputText.trim()) return;
 
-        if (planStep < questions.length - 1) {
-          addBotMessage(questions[planStep + 1]);
-          setPlanStep(planStep + 1);
+    const currentInput = inputText.trim();
+
+    // --- 1. VALIDATION LOGIC FOR PLAN MODE ---
+    if (!toggled && activePlan && activePlan.days.length === 0) {
+      let isValid = true;
+      let errorMsg = "";
+
+      switch (planStep) {
+        case 0: // Age
+          const age = parseInt(currentInput);
+          if (isNaN(age) || age < 10 || age > 100) {
+            isValid = false;
+            errorMsg = "Please enter a valid age (10-100).";
+          }
+          break;
+        case 1: // Weight
+        case 2: // Height
+          const val = parseFloat(currentInput);
+          if (isNaN(val) || val <= 0) {
+            isValid = false;
+            errorMsg = "Please enter a valid positive number.";
+          }
+          break;
+        case 3: // Goal
+
+        case 7: // Preference
+          if (currentInput.length < 3) {
+            isValid = false;
+            errorMsg = "Please be a bit more descriptive.";
+          }
+          break;
+        case 5: // Time
+          const mins = parseInt(currentInput);
+          if (isNaN(mins) || mins < 5 || mins > 300) {
+            isValid = false;
+            errorMsg = "Please enter minutes between 5 and 300.";
+          }
+          break;
+        case 6: // Days per week
+          const days = parseInt(currentInput);
+          if (isNaN(days) || days < 1 || days > 7) {
+            isValid = false;
+            errorMsg = "Please enter days per week between 1 and 7.";
+          }
+          break;
+      }
+
+      if (!isValid) {
+        addBotMessage(`⚠️ ${errorMsg}`);
+        return; // Stop execution here
+      }
+    }
+
+    // --- 2. PREPARE MESSAGES ---
+    const userMsg: Message = {
+      id: Date.now().toString(),
+      text: currentInput,
+      senderRole: "user",
+      senderId: user.uid,
+      senderName: user.displayName || "User",
+      timestamp: new Date()
+    };
+
+    const newMsgs = [...currentMessages, userMsg];
+    setCurrentMessages(newMsgs);
+    setInputText("");
+
+    // Save to Firebase immediately
+    saveChatHistory(
+      toggled ? newMsgs : chatMessages,
+      toggled ? planMessages : newMsgs
+    );
+
+    try {
+      if (toggled) {
+        // --- CHAT MODE ---
+        const res = await fetch(CHAT_API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            messages: newMsgs.map(m => ({
+              role: m.senderRole === "user" ? "user" : "assistant",
+              content: m.text
+            }))
+          })
+        });
+        const data = await res.json();
+        addBotMessage(data.reply);
+
+      } else if (activePlan) {
+        // --- PLAN MODE ---
+        if (activePlan.days.length === 0) {
+          const fieldNames = ["age", "weight", "height", "goal", "injury", "time", "daysPerWeek", "pref"];
+          const updatedFormData = { ...formData, [fieldNames[planStep]]: currentInput };
+          setFormData(updatedFormData);
+
+          if (planStep < questions.length - 1) {
+            addBotMessage(questions[planStep + 1]);
+            setPlanStep(planStep + 1);
+          } else {
+            addBotMessage("Generating your custom plan using our exercise database... 🏋️‍♂️");
+            const res = await fetch(PLAN_GEN_URL, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(updatedFormData)
+            });
+            const result = await res.json();
+
+            const updated = allPlans.map(p => {
+              if (p.id === activePlan.id) {
+                return {
+                  ...p,
+                  days: result.plan.days // result.plan.days ตอนนี้จะมีข้อมูลครบจาก Backend แล้ว
+                };
+              }
+              return p;
+            });
+            await setDoc(doc(db, "userPlans", user.uid), { plans: updated }, { merge: true });
+            addBotMessage(`Success! "${activePlan.name}" is ready.`);
+            setPlanStep(0);
+          }
         } else {
-          addBotMessage("Generating your custom plan using our exercise database... 🏋️‍♂️");
-          const res = await fetch(PLAN_GEN_URL, { 
-            method: "POST", 
-            headers: { "Content-Type": "application/json" }, 
-            body: JSON.stringify(updatedFormData) 
+          // --- UPDATE EXISTING PLAN ---
+          addBotMessage("Updating plan... 🔄");
+          const res = await fetch(PLAN_UPDATE_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ currentPlan: { days: activePlan.days }, instruction: currentInput })
           });
           const result = await res.json();
-          
           const updated = allPlans.map(p => {
             if (p.id === activePlan.id) {
-              return { 
-                ...p, 
+              return {
+                ...p,
                 days: result.plan.days // result.plan.days ตอนนี้จะมีข้อมูลครบจาก Backend แล้ว
               };
             }
             return p;
           });
           await setDoc(doc(db, "userPlans", user.uid), { plans: updated }, { merge: true });
-          addBotMessage(`Success! "${activePlan.name}" is ready.`);
-          setPlanStep(0);
+          addBotMessage("Your plan has been updated based on your request!");
         }
-      } else {
-        // --- UPDATE EXISTING PLAN ---
-        addBotMessage("Updating plan... 🔄");
-        const res = await fetch(PLAN_UPDATE_URL, { 
-          method: "POST", 
-          headers: { "Content-Type": "application/json" }, 
-          body: JSON.stringify({ currentPlan: { days: activePlan.days }, instruction: currentInput }) 
-        });
-        const result = await res.json();
-        const updated = allPlans.map(p => {
-          if (p.id === activePlan.id) {
-            return { 
-              ...p, 
-              days: result.plan.days // result.plan.days ตอนนี้จะมีข้อมูลครบจาก Backend แล้ว
-            };
-          }
-          return p;
-        });
-        await setDoc(doc(db, "userPlans", user.uid), { plans: updated }, { merge: true });
-        addBotMessage("Your plan has been updated based on your request!");
       }
+    } catch (err) {
+      addBotMessage("I'm sorry, I'm having trouble connecting to the server. Please try again.");
     }
-  } catch (err) { 
-    addBotMessage("I'm sorry, I'm having trouble connecting to the server. Please try again."); 
-  }
-};
+  };
 
   return (
     // Added h-[700px] and flex-col to keep it contained
@@ -362,8 +371,10 @@ export function Chatbot({ userName, availableExercises}: ChatbotProps) {
           <div style={{ width: 80, height: 40, backgroundColor: "white", borderRadius: 20, padding: 5 }}>
             <button style={{ width: "100%", height: "100%", background: "transparent", border: "none", cursor: "pointer" }}
               onClick={() => setToggled((p) => !p)}>
-              <div style={{ width: 30, height: 30, borderRadius: 15, backgroundColor: toggled ? "#4f46e5" : "#9333ea", 
-                transform: toggled ? "translateX(40px)" : "translateX(0px)", transition: "transform 0.25s ease" }} />
+              <div style={{
+                width: 30, height: 30, borderRadius: 15, backgroundColor: toggled ? "#4f46e5" : "#9333ea",
+                transform: toggled ? "translateX(40px)" : "translateX(0px)", transition: "transform 0.25s ease"
+              }} />
             </button>
           </div>
         </div>

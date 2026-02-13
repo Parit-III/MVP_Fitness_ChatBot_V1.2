@@ -41,9 +41,9 @@ const embedText = async (text) => {
   try {
     const response = await axios.post(
       HF_API_URL,
-      { 
+      {
         inputs: text,
-        options: { wait_for_model: true } 
+        options: { wait_for_model: true }
       },
       {
         headers: {
@@ -56,7 +56,7 @@ const embedText = async (text) => {
     // ✅ FIX: Extract the vector properly. 
     // Hugging Face often returns [[0.1, 0.2...]] for this model.
     const result = response.data;
-    return Array.isArray(result[0]) ? result[0] : result; 
+    return Array.isArray(result[0]) ? result[0] : result;
 
   } catch (err) {
     console.error("❌ EMBEDDING ERROR:", err.response?.data || err.message);
@@ -74,11 +74,11 @@ const findSimilarExercisesLocal = async (queryVector, limit = 5, avoidPart = "No
     .filter(ex => {
       // 1. ตรวจสอบว่ามี vector หรือไม่
       const hasVector = ex.embedding && Array.isArray(ex.embedding);
-      
+
       // 2. ตรวจสอบว่าไม่ใช่ส่วนที่ต้องเลี่ยง (Case-insensitive)
       // ถ้า avoidPart เป็น "None" จะให้ผ่านหมด แต่ถ้ามีระบุ จะต้องไม่ตรงกับ BodyPart ของท่า
-      const isSafe = avoidPart === "None" || 
-                     ex.BodyPart.toLowerCase() !== avoidPart.toLowerCase();
+      const isSafe = avoidPart === "None" ||
+        ex.BodyPart.toLowerCase() !== avoidPart.toLowerCase();
 
       return hasVector && isSafe;
     })
@@ -98,7 +98,7 @@ const findSimilarExercisesLocal = async (queryVector, limit = 5, avoidPart = "No
 /* ========================= */
 router.post("/plan", async (req, res) => {
   console.log("📩 /plan called");
-  const { age, weight, height, goal, injury, time, pref } = req.body;
+  const { age, weight, height, goal, injury, time, pref, daysPerWeek } = req.body;
 
   try {
     // --- ส่วนเดิมของคุณทั้งหมด (ห้ามแก้) ---
@@ -121,15 +121,17 @@ router.post("/plan", async (req, res) => {
 
     const userVector = await embedText(`${goal} ${pref}`);
     const topExercises = await findSimilarExercisesLocal(userVector, 7, avoidPart.trim());
-
-    const contextText = topExercises.map(ex => 
+    const totalDays = Math.min(Math.max(parseInt(daysPerWeek) || 3, 1), 7);
+    const contextText = topExercises.map(ex =>
       `---\nExercise: ${ex.Title}\nFocus: ${ex.BodyPart}\nDescription: ${ex.Desc}`
     ).join("\n\n");
 
     const prompt = `
   You are a professional personal trainer.
-  You are creating a workout plan (5 days Monday-Friday).
+  
   STRICT RULES:
+  - Create a workout plan with EXACTLY ${totalDays} workout days
+- The "days" array length MUST be ${totalDays}
   - Make a workout plan that suit user needs
   - Match exercises to the user's goal
   - If user wants to avoid a body part, replace with other muscle 
@@ -177,7 +179,7 @@ router.post("/plan", async (req, res) => {
       exercises: day.exercises.map(aiEx => {
         // หาข้อมูลจากไฟล์ Exe.json (ที่โหลดไว้ใน exercisesData)
         const masterData = exercisesData.find(ex => ex.Title.toLowerCase() === aiEx.name.toLowerCase());
-        
+
         if (masterData) {
           return {
             ...aiEx, // { name, sets, reps }
@@ -299,7 +301,7 @@ OUTPUT FORMAT EXACTLY:
       exercises: day.exercises.map(aiEx => {
         // หาข้อมูลจากไฟล์ Exe.json (ที่โหลดไว้ใน exercisesData)
         const masterData = exercisesData.find(ex => ex.Title.toLowerCase() === aiEx.name.toLowerCase());
-        
+
         if (masterData) {
           return {
             ...aiEx, // { name, sets, reps }
