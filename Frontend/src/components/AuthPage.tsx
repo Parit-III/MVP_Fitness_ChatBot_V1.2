@@ -153,7 +153,7 @@ export function AuthPage() {
 
           <input
             type="password"
-            placeholder="Password"
+            placeholder="Password (Enter at least 9 characters)"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="w-full py-3 px-4 border rounded-xl"
