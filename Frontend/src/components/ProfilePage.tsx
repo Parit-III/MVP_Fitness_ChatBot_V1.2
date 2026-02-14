@@ -2,16 +2,16 @@ import { useState, useEffect } from 'react';
 import { Calendar, Flame, TrendingUp, Activity, Plus } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 // Firebase Imports
-import { db } from '../firebase'; 
-import { 
-  doc, 
-  collection, 
-  onSnapshot, 
-  setDoc, 
-  addDoc, 
-  query, 
-  orderBy, 
-  serverTimestamp 
+import { db } from '../firebase';
+import {
+  doc,
+  collection,
+  onSnapshot,
+  setDoc,
+  addDoc,
+  query,
+  orderBy,
+  serverTimestamp
 } from 'firebase/firestore';
 
 interface WorkoutStreak {
@@ -34,11 +34,11 @@ interface ProfilePageProps {
 export function ProfilePage({ userId, userName }: ProfilePageProps) {
   const [completedWorkouts, setCompletedWorkouts] = useState<WorkoutStreak[]>([]);
   const [bmiRecords, setBmiRecords] = useState<BMIRecord[]>([]);
-  
+
   const [showBMIForm, setShowBMIForm] = useState(false);
   const [newWeight, setNewWeight] = useState('');
   const [newHeight, setNewHeight] = useState('170');
-
+  const [currentMonth, setCurrentMonth] = useState(new Date());
   // --- Firestore Sync Logic ---
 
   useEffect(() => {
@@ -56,7 +56,7 @@ export function ProfilePage({ userId, userName }: ProfilePageProps) {
 
     // 2. Listen for BMI Records
     const bmiRef = query(
-      collection(db, 'users', userId, 'bmiRecords'), 
+      collection(db, 'users', userId, 'bmiRecords'),
       orderBy('date', 'asc')
     );
     const unsubBMI = onSnapshot(bmiRef, (snapshot) => {
@@ -73,51 +73,51 @@ export function ProfilePage({ userId, userName }: ProfilePageProps) {
   // --- Action Handlers ---
 
   const handleAddBMI = async () => {
-  // 1. Check if inputs are empty
-  if (!newWeight || !newHeight) return;
-  
-  // 2. IMPORTANT: Check if userId exists before calling Firestore
-  if (!userId) {
-    console.error("Error: userId is undefined. Check if it's passed from Dashboard.");
-    alert("User session not found. Please try logging in again.");
-    return;
-  }
-  
-  try {
-    const weight = parseFloat(newWeight);
-    const height = parseFloat(newHeight) / 100;
-    const bmi = weight / (height * height);
-    
-    const newRecord = {
-      date: new Date().toISOString().split('T')[0],
-      bmi: parseFloat(bmi.toFixed(1)),
-      weight,
-      height: parseFloat(newHeight),
-      createdAt: serverTimestamp()
-    };
-    
-    // The error happens here if userId is undefined
-    const bmiCollectionRef = collection(db, 'users', userId, 'bmiRecords');
-    await addDoc(bmiCollectionRef, newRecord);
-    
-    setNewWeight('');
-    setShowBMIForm(false);
-  } catch (error) {
-    console.error("Error adding BMI record:", error);
-  }
-};
+    // 1. Check if inputs are empty
+    if (!newWeight || !newHeight) return;
+
+    // 2. IMPORTANT: Check if userId exists before calling Firestore
+    if (!userId) {
+      console.error("Error: userId is undefined. Check if it's passed from Dashboard.");
+      alert("User session not found. Please try logging in again.");
+      return;
+    }
+
+    try {
+      const weight = parseFloat(newWeight);
+      const height = parseFloat(newHeight) / 100;
+      const bmi = weight / (height * height);
+
+      const newRecord = {
+        date: new Date().toISOString().split('T')[0],
+        bmi: parseFloat(bmi.toFixed(1)),
+        weight,
+        height: parseFloat(newHeight),
+        createdAt: serverTimestamp()
+      };
+
+      // The error happens here if userId is undefined
+      const bmiCollectionRef = collection(db, 'users', userId, 'bmiRecords');
+      await addDoc(bmiCollectionRef, newRecord);
+
+      setNewWeight('');
+      setShowBMIForm(false);
+    } catch (error) {
+      console.error("Error adding BMI record:", error);
+    }
+  };
 
   // Optional: Function to log today's workout to Firestore
   const toggleTodayWorkout = async () => {
-  const today = new Date();
-  const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-  
-  const workoutRef = doc(db, 'users', userId, 'workouts', dateStr);
-  await setDoc(workoutRef, {
-    completed: true,
-    timestamp: serverTimestamp()
-  }, { merge: true });
-};
+    const today = new Date();
+    const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+    const workoutRef = doc(db, 'users', userId, 'workouts', dateStr);
+    await setDoc(workoutRef, {
+      completed: true,
+      timestamp: serverTimestamp()
+    }, { merge: true });
+  };
 
   // --- Existing Logic (Unchanged) ---
 
@@ -146,32 +146,47 @@ export function ProfilePage({ userId, userName }: ProfilePageProps) {
   };
 
   // แก้ไขฟังก์ชัน getCalendarDays ใน ProfilePage.tsx ให้แม่นยำขึ้น
-const getCalendarDays = () => {
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = today.getMonth();
-  const firstDay = new Date(year, month, 1);
-  const lastDay = new Date(year, month + 1, 0);
-  
-  const days: Array<{ date: Date; hasWorkout: boolean; isToday: boolean }> = [];
-  const startDay = firstDay.getDay();
+  const getCalendarDays = (monthDate: Date) => {
+    const year = monthDate.getFullYear();
+    const month = monthDate.getMonth();
 
-  for (let i = 0; i < startDay; i++) {
-    days.push({ date: new Date(0), hasWorkout: false, isToday: false });
-  }
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
 
-  for (let day = 1; day <= lastDay.getDate(); day++) {
-    const date = new Date(year, month, day);
-    
-    // FIX: Use local date string instead of ISO to prevent timezone shifts
-    const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-    
-    const hasWorkout = completedWorkouts.some(w => w.date === dateStr && w.completed);
-    const isToday = date.toDateString() === today.toDateString();
-    days.push({ date, hasWorkout, isToday });
-  }
-  return days;
-};
+    const days: Array<{ date: Date; hasWorkout: boolean; isToday: boolean }> = [];
+    const startDay = firstDay.getDay();
+    const today = new Date();
+
+    // ช่องว่างก่อนวันแรก
+    for (let i = 0; i < startDay; i++) {
+      days.push({ date: new Date(0), hasWorkout: false, isToday: false });
+    }
+
+    for (let day = 1; day <= lastDay.getDate(); day++) {
+      const date = new Date(year, month, day);
+
+      const dateStr = `${date.getFullYear()}-${String(
+        date.getMonth() + 1
+      ).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+
+      const hasWorkout = completedWorkouts.some(
+        w => w.date === dateStr && w.completed
+      );
+
+      const isToday = date.toDateString() === today.toDateString();
+
+      days.push({ date, hasWorkout, isToday });
+    }
+
+    return days;
+  };
+  const changeMonth = (direction: 'prev' | 'next') => {
+    setCurrentMonth(prev => {
+      const newDate = new Date(prev);
+      newDate.setMonth(prev.getMonth() + (direction === 'next' ? 1 : -1));
+      return newDate;
+    });
+  };
 
   const calculateWorkoutFrequency = () => {
     const last30Days = completedWorkouts.filter(w => {
@@ -185,7 +200,7 @@ const getCalendarDays = () => {
 
   const currentStreak = calculateStreak();
   const workoutsLast30Days = calculateWorkoutFrequency();
-  const calendarDays = getCalendarDays();
+  const calendarDays = getCalendarDays(currentMonth);
   const currentBMI = bmiRecords.length > 0 ? bmiRecords[bmiRecords.length - 1].bmi : 0;
 
   return (
@@ -235,15 +250,22 @@ const getCalendarDays = () => {
 
       {/* Streak Calendar */}
       <div className="bg-white rounded-xl shadow-md p-6">
-        <div className="flex items-center gap-3 mb-6">
-          <Calendar className="w-6 h-6 text-indigo-600" />
-          <h3 className="text-xl font-bold text-gray-900">Workout Calendar</h3>
-        </div>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-xl font-bold flex items-center gap-2">
+            <Calendar className="w-6 h-6 text-indigo-600" />
+            Workout Calendar
+          </h3>
 
-        <div className="mb-4">
-          <p className="text-center text-lg font-semibold text-gray-700">
-            {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-          </p>
+          <div className="flex items-center gap-3">
+            <button onClick={() => changeMonth('prev')}>◀</button>
+            <span className="font-semibold">
+              {currentMonth.toLocaleDateString('en-US', {
+                month: 'long',
+                year: 'numeric'
+              })}
+            </span>
+            <button onClick={() => changeMonth('next')}>▶</button>
+          </div>
         </div>
 
         <div className="grid grid-cols-7 gap-2">
@@ -252,19 +274,18 @@ const getCalendarDays = () => {
               {day}
             </div>
           ))}
-          
+
           {calendarDays.map((day, index) => (
             <div
               key={index}
-              className={`aspect-square rounded-lg flex items-center justify-center text-sm font-medium transition-colors ${
-                day.date.getTime() === 0
-                  ? 'bg-transparent'
-                  : day.hasWorkout
+              className={`aspect-square rounded-lg flex items-center justify-center text-sm font-medium transition-colors ${day.date.getTime() === 0
+                ? 'bg-transparent'
+                : day.hasWorkout
                   ? 'bg-green-500 text-white shadow-md'
                   : day.isToday
-                  ? 'bg-indigo-100 text-indigo-600 border-2 border-indigo-600'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+                    ? 'bg-indigo-100 text-indigo-600 border-2 border-indigo-600'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
             >
               {day.date.getTime() !== 0 && day.date.getDate()}
             </div>
@@ -350,19 +371,19 @@ const getCalendarDays = () => {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={bmiRecords}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="date" 
+                <XAxis
+                  dataKey="date"
                   tickFormatter={(date) => new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                 />
                 <YAxis domain={['dataMin - 2', 'dataMax + 2']} />
-                <Tooltip 
+                <Tooltip
                   labelFormatter={(date) => new Date(date).toLocaleDateString()}
                   formatter={(value: number) => [value.toFixed(1), 'BMI']}
                 />
-                <Line 
-                  type="monotone" 
-                  dataKey="bmi" 
-                  stroke="#4f46e5" 
+                <Line
+                  type="monotone"
+                  dataKey="bmi"
+                  stroke="#4f46e5"
                   strokeWidth={3}
                   dot={{ fill: '#4f46e5', r: 5 }}
                   activeDot={{ r: 7 }}
