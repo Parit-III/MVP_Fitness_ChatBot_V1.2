@@ -194,11 +194,24 @@ export function ExercisePlans({
           const isActive = activePlanId === plan.id;
           const isPinned = plan.isPinned;
 
+          let borderColor = "";
+          if (isActive) {
+            borderColor = "#3b82f6";
+          } else if (isPinned) {
+            borderColor = "#facc15";
+          }
+
+          console.log(`${plan.name} Border is seted as ${borderColor}`)
+
           return (
             <div
               key={plan.id}
-              className={`relative bg-white rounded-2xl shadow-lg border-2 transition-all
-                ${isActive ? "border-blue-500 ring-4 ring-blue-50" : isPinned ? "border-yellow-400" : "border-gray-100"}`}
+              // Keep your Tailwind classes for layout/rings
+              className={`relative bg-white rounded-2xl shadow-lg border-2 transition-all ${
+                isActive ? "ring-4 ring-blue-100 z-10" : ""
+              }`}
+              // FORCE the border color using inline style to beat the "*" selector
+              style={borderColor ? { borderColor: borderColor } : {}}
             >
               <div className="p-6">
                 {/* Title */}
