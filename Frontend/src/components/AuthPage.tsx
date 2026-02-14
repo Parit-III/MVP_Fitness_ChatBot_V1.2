@@ -153,10 +153,15 @@ export function AuthPage() {
 
           <input
             type="password"
-            placeholder="Password (Enter at least 9 characters)"
+            placeholder={
+              isLogin
+              ? "Password"
+              : "Password (Enter at least 9 characters)"
+            }
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="w-full py-3 px-4 border rounded-xl"
+            minLength={!isLogin ? 9 : undefined}
             required
           />
 
