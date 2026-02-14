@@ -50,7 +50,8 @@ export function Dashboard({ user, onLogout }: DashboardProps) {
           reps: data.reps || "8-12",
           calories: data.calories || 60,
           instructions: data.instructions || [],
-          tips: data.tips || []
+          tips: data.tips || [],
+          videoURL: data.videoURL || "",
         } as Exercise;
       });
 
@@ -238,10 +239,11 @@ export function Dashboard({ user, onLogout }: DashboardProps) {
                 onViewDetail={(id) => setSelectedPlanId(id)}
                 onStartExercise={(exerciseFromPlan, planName) => {
                   const exerciseToView = {
-                    ...exerciseFromPlan,
+                    ...exerciseFromPlan, // This spreads existing fields, but explicit mapping is safer for naming mismatches
                     Title: exerciseFromPlan.Title || exerciseFromPlan.name,
                     Desc: exerciseFromPlan.Desc || exerciseFromPlan.desc,
                     BodyPart: exerciseFromPlan.BodyPart || exerciseFromPlan.bodyPart,
+                    videoURL: exerciseFromPlan.videoURL, // <--- Add this line
                     id: exerciseFromPlan.id || `ex_${Date.now()}`
                   } as Exercise;
 

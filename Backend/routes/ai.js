@@ -105,6 +105,7 @@ router.post("/plan", async (req, res) => {
     const analysisPrompt = `
       The user says they have this injury: "${injury}" or preference: "${pref}".
       Which body part should they avoid exercising? 
+      Strict Rule: return English ONLY
       Choose ONLY ONE from this list: 
       ['Abdominals', 'Abductors', 'Adductors', 'Biceps', 'Calves',
        'Chest', 'Forearms', 'Glutes', 'Hamstrings', 'Lats', 'Lower Back',

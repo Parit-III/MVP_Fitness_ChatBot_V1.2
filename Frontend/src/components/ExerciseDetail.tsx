@@ -12,8 +12,20 @@ interface ExerciseDetailProps {
   userId: string; // ✅ เพิ่ม userId เข้ามาใน Props
 }
 
+const TEST_YOUTUBE_URL = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
+
+const getYouTubeID = (url: string) => {
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[2].length === 11) ? match[2] : null;
+};
+
 export function ExerciseDetail({ exercise, planName, onBack, onComplete, userId }: ExerciseDetailProps) {
   // ✅ ใส่ตรงนี้เลย
+
+  console.log(exercise)
+  const videoToDisplay = exercise.videoURL || TEST_YOUTUBE_URL;
+
   if (!exercise) {
     return <div className="p-8">Exercise not found</div>;
   }
@@ -273,6 +285,35 @@ const progressPercentage = setDurationSeconds > 0
               </div>
             </div>
           )}
+
+          {/* Video Tutorial */}
+           <div>
+            <h3 className="text-xl font-bold text-gray-900 mb-3">Video Tutorial</h3>
+            {videoToDisplay ? (
+              <div className="rounded-lg overflow-hidden aspect-video shadow-lg border border-gray-200">
+                <iframe
+                  width="100%"
+                  height="100%"
+                  src={`https://www.youtube-nocookie.com/embed/${getYouTubeID(videoToDisplay)}`}
+                  title="YouTube video player"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                ></iframe>
+              </div>
+            ) : (
+              <div className="bg-gray-100 rounded-lg aspect-video flex items-center justify-center">
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-indigo-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  </div>
+                  <p className="text-gray-600">Video tutorial coming soon</p>
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Description */}
           <div>

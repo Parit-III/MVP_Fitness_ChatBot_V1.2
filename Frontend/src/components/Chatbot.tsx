@@ -42,6 +42,19 @@ const CHAT_API_URL = `${import.meta.env.VITE_API_URL}/api/ai/chat`;
 const PLAN_GEN_URL = `${import.meta.env.VITE_API_URL}/api/ai/plan`;
 const PLAN_UPDATE_URL = `${import.meta.env.VITE_API_URL}/api/ai/update-plan`;
 
+const StringHelper = {
+  clean: (text: string | undefined | null): string => {
+    return (text || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, "") // Removes everything except letters and numbers
+      .trim();
+  },
+  
+  isMatch: (a: string, b: string): boolean => {
+    return StringHelper.clean(a) === StringHelper.clean(b);
+  }
+};
+
 export function Chatbot({ userName, availableExercises }: ChatbotProps) {
   // const [isThinking, setIsThinking] = useState(false);// ai กำลังคิด
 
@@ -322,19 +335,65 @@ export function Chatbot({ userName, availableExercises }: ChatbotProps) {
             headers: { "Content-Type": "application/json" }, 
             body: JSON.stringify(updatedFormData) 
           });
+          // 1. Get names from AI response
           const result = await res.json();
-          
-          const updated = allPlans.map(p => {
+          const allAiNames = result.plan.days.flatMap((d: any) => 
+            d.exercises.map((ex: any) => ex.name || ex.Title)
+          );
+
+          // 2. Remove duplicates
+          const uniqueNames = Array.from(new Set(allAiNames));
+
+          // 3. One single query to get all full objects for these names
+          const { collection, query, where, getDocs } = await import("firebase/firestore");
+
+          // Firestore "in" queries allow up to 30 items at once (perfect for a workout plan)
+          const q = query(
+            collection(db, "exercises"), 
+            where("Title", "in", uniqueNames) 
+          );
+
+          const querySnapshot = await getDocs(q);
+          const foundExercises = querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          })) as Exercise[];
+
+          console.log(foundExercises)
+
+          // 4. Now map your enrichedDays using this "foundExercises" mini-library
+          const enrichedDays = result.plan.days.map((day: any) => ({
+            ...day,
+            exercises: day.exercises.map((aiEx: any) => {
+              const aiName = aiEx.name || aiEx.Title;
+              
+              // Use your StringHelper to find it in our mini-library
+              const fullData = foundExercises.find(libEx => 
+                StringHelper.isMatch(libEx.Title, aiName)
+              );
+
+              if (fullData) {
+                return { ...fullData, sets: aiEx.sets, reps: aiEx.reps };
+              }
+              return aiEx; // Fallback
+            })
+          }));
+
+          // 4. Update the plans array with the enriched data
+          const updatedPlans = allPlans.map(p => {
             if (p.id === activePlan.id) {
               return { 
                 ...p, 
-                days: result.plan.days // result.plan.days ตอนนี้จะมีข้อมูลครบจาก Backend แล้ว
+                days: enrichedDays 
               };
             }
             return p;
           });
-          await setDoc(doc(db, "userPlans", user.uid), { plans: updated }, { merge: true });
-          addBotMessage(`Success! "${activePlan.name}" is ready.`);
+          await setDoc(doc(db, "userPlans", user.uid), { 
+            plans: updatedPlans 
+          }, { merge: true });
+
+          addBotMessage(`Success! "${activePlan.name}" is now updated with full exercise details and videos.`);
           setPlanStep(0);
         }
       }
