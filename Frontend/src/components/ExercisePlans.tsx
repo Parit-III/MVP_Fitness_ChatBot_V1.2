@@ -32,6 +32,7 @@ export interface Exercise {
   // ✅ เพิ่มฟิลด์รองรับชื่อที่อาจจะมาจาก Backend
   name?: string; 
   bodyPart?: string;
+  equipment?: string;
   desc?: string;
 }
 
@@ -250,7 +251,7 @@ export function ExercisePlans({
             className="w-full flex items-center gap-3 p-2 hover:bg-gray-100 rounded-lg text-blue-700 transition-colors"
           >
             <Target className="w-4 h-4" />
-            <span className="text-sm font-medium">Set as Active</span>
+            <span className="text-sm font-medium">Active</span>
           </button>
 
           <button

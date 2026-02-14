@@ -283,29 +283,31 @@ const progressPercentage = setDurationSeconds > 0
 
           {/* Instructions */}
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Instructions</h2>
-            <ol className="space-y-3">
-              {exercise.instructions.map((instruction, index) => (
-                <li key={index} className="flex gap-4">
-                  <span className="flex-shrink-0 w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center font-medium">
-                    {index + 1}
-                  </span>
-                  <p className="text-gray-700 pt-1">{instruction}</p>
-                </li>
-              ))}
-            </ol>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Equipment</h2>
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center">
+                  <span className="font-bold">🛠️</span>
+                </div>
+                <p className="text-xl text-gray-800 font-medium">
+                  {exercise.equipment || exercise.Equipment || "No Equipment Required"}
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* Tips */}
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Pro Tips</h2>
-            <div className="bg-indigo-50 rounded-lg p-6 space-y-3">
-              {exercise.tips.map((tip, index) => (
-                <div key={index} className="flex items-start gap-3">
-                  <div className="w-2 h-2 bg-indigo-600 rounded-full mt-2 flex-shrink-0"></div>
-                  <p className="text-gray-700">{tip}</p>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Body Part</h2>
+            <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-white text-indigo-600 rounded-full flex items-center justify-center shadow-sm">
+                  <span className="font-bold">💪</span>
                 </div>
-              ))}
+                <p className="text-xl text-indigo-900 font-bold uppercase tracking-wide">
+                  {exercise.bodyPart || exercise.BodyPart || "General"}
+                </p>
+              </div>
             </div>
           </div>
 
