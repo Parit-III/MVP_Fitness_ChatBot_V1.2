@@ -30,6 +30,7 @@ export interface Exercise {
   name?: string;
   bodyPart?: string;
   desc?: string;
+  videoURL: string;
 }
 
 interface ChatbotProps {
@@ -58,7 +59,7 @@ export function Chatbot({ userName, availableExercises }: ChatbotProps) {
   const [formData, setFormData] = useState({ age: "", weight: "", height: "", goal: "", injury: "", time: "", daysPerWeek: "", pref: "" });
 
   const questions = [
-    "What is your age?",
+    "\nWhat is your age?",
     "What is your weight (kg)?",
     "What is your height (cm)?",
     "What is your fitness goal (e.g., lose weight, build muscle)?",

@@ -34,6 +34,7 @@ export interface Exercise {
   bodyPart?: string;
   equipment?: string;
   desc?: string;
+  videoURL: string;
 }
 
 export interface ExercisePlan {
