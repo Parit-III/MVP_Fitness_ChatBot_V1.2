@@ -233,9 +233,9 @@ export function Chatbot({ userName, availableExercises }: ChatbotProps) {
         case 1: // Weight
         case 2: // Height
           const val = parseFloat(currentInput);
-          if (isNaN(val) || val <= 0) {
+          if (isNaN(val) || val < 35 || val > 275) {
             isValid = false;
-            errorMsg = "Please enter a valid positive number.";
+            errorMsg = "Please enter a valid (35 - 275).";
           }
           break;
         case 3: // Goal
