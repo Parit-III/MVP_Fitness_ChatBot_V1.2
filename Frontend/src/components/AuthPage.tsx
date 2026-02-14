@@ -26,10 +26,16 @@ export function AuthPage() {
       return;
     }
 
+    if (!isLogin && password.length < 9) {
+      alert("Password must be at least 9 characters");
+      return;
+    }
+
     if (!isLogin && password !== confirmPassword) {
       alert("Passwords do not match");
       return;
     }
+
 
     try {
       setLoading(true);
