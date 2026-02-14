@@ -28,7 +28,7 @@ export function ExerciseDetailModal({ exercise, onClose }: ExerciseDetailModalPr
                 )}
                 <div className="flex items-center gap-2">
                   <Flame className="w-4 h-4" />
-                  <span className="text-sm">{exercise.calories} calories</span>
+                  <span className="text-sm"></span>
                 </div>
               </div>
             </div>

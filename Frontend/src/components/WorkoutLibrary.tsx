@@ -155,10 +155,6 @@ const categorizeExercise = (exercise: Exercise): string => {
                   <span className="font-medium">{exercise.duration}</span>
                 </div>
               )}
-              <div className="flex items-center gap-1 text-orange-600">
-                <span className="font-medium">{exercise.calories}</span>
-                <span>cal</span>
-              </div>
             </div>
           </button>
         ))}
