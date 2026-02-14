@@ -23,7 +23,7 @@ const getYouTubeID = (url: string) => {
 export function ExerciseDetail({ exercise, planName, onBack, onComplete, userId }: ExerciseDetailProps) {
   // ✅ ใส่ตรงนี้เลย
 
-  console.log(exercise)
+  // console.log(exercise)
   const videoToDisplay = exercise.videoURL || TEST_YOUTUBE_URL;
 
   if (!exercise) {
@@ -127,27 +127,27 @@ const handleMarkComplete = async () => {
   if (!userId || !exercise?.Title) return;
 
   try {
-    const todayStr = new Date().toISOString().split('T')[0];
+    // ✅ This forces the date to be calculated based on Thailand Timezone
+    // regardless of the user's device settings.
+    const thailandDate = new Date().toLocaleDateString('en-CA', {
+      timeZone: 'Asia/Bangkok',
+    }); 
+    // Result format: "2026-02-15" (en-CA gives YYYY-MM-DD)
 
-    // ✅ ใช้ path เดียวกับ ProfilePage
-    const workoutRef = doc(db, 'users', userId, 'workouts', todayStr);
+    const workoutRef = doc(db, 'users', userId, 'workouts', thailandDate);
 
-    await setDoc(
-      workoutRef,
-      {
-        completed: true,
-        timestamp: serverTimestamp(),
-        exerciseName: exercise.Title,
-        planName: planName,
-      },
-      { merge: true }
-    );
+    await setDoc(workoutRef, {
+      completed: true,
+      timestamp: serverTimestamp(), // Firestore server time (UTC) for precise ordering
+      localDate: thailandDate,       // Your "Streak Date" (Thailand)
+      exerciseName: exercise.Title,
+      planName: planName,
+    }, { merge: true });
 
-    console.log("Workout saved → users/{uid}/workouts");
-
+    console.log(`Saved to Thailand Date: ${thailandDate}`);
     if (onComplete) onComplete();
     onBack();
-  } catch (error: any) {
+  } catch (error) {
     console.error(error);
   }
 };

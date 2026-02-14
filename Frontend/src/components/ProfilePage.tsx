@@ -226,7 +226,7 @@ export function ProfilePage({ userId, userName }: ProfilePageProps) {
             <span className="text-3xl font-bold">{currentStreak}</span>
           </div>
           <h3 className="text-lg font-semibold">Day Streak</h3>
-          <p className="text-sm text-orange-100">Click to log today!</p>
+          <p className="text-sm text-orange-100">You can do it!</p>
         </div>
 
         <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-md p-6 text-white">

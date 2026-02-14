@@ -359,7 +359,7 @@ export function Chatbot({ userName, availableExercises }: ChatbotProps) {
             ...doc.data()
           })) as Exercise[];
 
-          console.log(foundExercises)
+          // console.log(foundExercises)
 
           // 4. Now map your enrichedDays using this "foundExercises" mini-library
           const enrichedDays = result.plan.days.map((day: any) => ({
