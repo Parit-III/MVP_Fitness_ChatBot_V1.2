@@ -227,12 +227,23 @@ export function ExercisePlans({
                     ? `${plan.days.length} Days of workouts`
                     : "Empty Plan - Set Active to fill with AI"}
                 </p>
-
                 <button
                   onClick={() => onViewDetail?.(plan.id)}
-                  className="px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg font-medium hover:bg-indigo-100"
+                  className="
+                    px-4 py-2 
+                    bg-indigo-50 
+                    text-indigo-700 
+                    rounded-lg 
+                    font-medium 
+                    shadow-md
+                    hover:bg-indigo-100 
+                    hover:shadow-lg
+                    active:shadow-sm
+                    active:translate-y-0.5
+                    transition
+                  "
                 >
-                  Viwe Detail
+                  View Detail
                 </button>
 
                 {/* Expanded */}

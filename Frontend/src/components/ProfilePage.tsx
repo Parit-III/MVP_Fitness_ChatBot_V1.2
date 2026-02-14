@@ -220,7 +220,7 @@ export function ProfilePage({ userId, userName }: ProfilePageProps) {
 
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-gradient-to-br from-orange-500 to-red-500 rounded-xl shadow-md p-6 text-white cursor-pointer hover:opacity-90 transition-opacity" onClick={toggleTodayWorkout}>
+        <div className="bg-gradient-to-br from-orange-500 to-red-500 rounded-xl shadow-md p-6 text-white cursor-pointer hover:opacity-90 transition-opacity">
           <div className="flex items-center justify-between mb-2">
             <Flame className="w-8 h-8" />
             <span className="text-3xl font-bold">{currentStreak}</span>
