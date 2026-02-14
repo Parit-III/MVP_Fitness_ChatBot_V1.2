@@ -256,15 +256,31 @@ export function ProfilePage({ userId, userName }: ProfilePageProps) {
             Workout Calendar
           </h3>
 
-          <div className="flex items-center gap-3">
-            <button onClick={() => changeMonth('prev')}>◀</button>
-            <span className="font-semibold">
-              {currentMonth.toLocaleDateString('en-US', {
-                month: 'long',
-                year: 'numeric'
-              })}
-            </span>
-            <button onClick={() => changeMonth('next')}>▶</button>
+          <div className="flex items-center justify-center bg-white p-2 rounded-xl shadow-sm border border-gray-100">
+
+            {/* ปุ่มฝั่งซ้าย */}
+            <button
+              onClick={() => changeMonth('prev')}
+              className="p-2 hover:bg-gray-100 rounded-full transition-all active:scale-90"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6" /></svg>
+            </button>
+
+            {/* ส่วนที่แก้ปัญหา: จองพื้นที่ไว้ 200px และจัดตัวอักษรให้อยู่ตรงกลางเสมอ */}
+            <div className="w-[200px] flex justify-center items-center mx-2">
+              <span className="text-lg font-bold text-gray-800 select-none">
+                {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+              </span>
+            </div>
+
+            {/* ปุ่มฝั่งขวา */}
+            <button
+              onClick={() => changeMonth('next')}
+              className="p-2 hover:bg-gray-100 rounded-full transition-all active:scale-90"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6" /></svg>
+            </button>
+
           </div>
         </div>
 
