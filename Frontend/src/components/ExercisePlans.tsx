@@ -32,6 +32,7 @@ export interface Exercise {
   // ✅ เพิ่มฟิลด์รองรับชื่อที่อาจจะมาจาก Backend
   name?: string; 
   bodyPart?: string;
+  equipment?: string;
   desc?: string;
 }
 
