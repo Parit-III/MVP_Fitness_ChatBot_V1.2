@@ -66,29 +66,27 @@ export function ExerciseDetailModal({ exercise, onClose }: ExerciseDetailModalPr
 
           {/* Instructions */}
           <div>
-            <h3 className="text-xl font-bold text-gray-900 mb-4">Instructions</h3>
-            <ol className="space-y-3">
-              {exercise.instructions.map((instruction, index) => (
-                <li key={index} className="flex gap-4">
-                  <span className="flex-shrink-0 w-7 h-7 bg-indigo-600 text-white rounded-full flex items-center justify-center font-medium text-sm">
-                    {index + 1}
-                  </span>
-                  <p className="text-gray-700 pt-0.5">{instruction}</p>
-                </li>
-              ))}
-            </ol>
+            <h3 className="text-xl font-bold text-gray-900 mb-3">Equipment</h3>
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex items-center gap-3">
+              <div className="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center">
+                <span className="font-bold">🛠️</span>
+              </div>
+              <p className="text-lg text-gray-800 font-medium">
+                {exercise.equipment || exercise.Equipment || "No Equipment Required"}
+              </p>
+            </div>
           </div>
 
           {/* Tips */}
           <div>
-            <h3 className="text-xl font-bold text-gray-900 mb-4">Pro Tips</h3>
-            <div className="bg-indigo-50 rounded-lg p-5 space-y-3">
-              {exercise.tips.map((tip, index) => (
-                <div key={index} className="flex items-start gap-3">
-                  <div className="w-2 h-2 bg-indigo-600 rounded-full mt-2 flex-shrink-0"></div>
-                  <p className="text-gray-700">{tip}</p>
-                </div>
-              ))}
+            <h3 className="text-xl font-bold text-gray-900 mb-3">Body Part</h3>
+            <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4 flex items-center gap-3">
+              <div className="w-10 h-10 bg-white text-indigo-600 rounded-full flex items-center justify-center shadow-sm">
+                <span className="font-bold">💪</span>
+              </div>
+              <p className="text-lg text-indigo-900 font-bold uppercase tracking-wide">
+                {exercise.bodyPart || exercise.BodyPart || "General"}
+              </p>
             </div>
           </div>
         </div>

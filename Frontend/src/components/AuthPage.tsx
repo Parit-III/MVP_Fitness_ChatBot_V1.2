@@ -26,10 +26,16 @@ export function AuthPage() {
       return;
     }
 
+    if (!isLogin && password.length < 9) {
+      alert("Password must be at least 9 characters");
+      return;
+    }
+
     if (!isLogin && password !== confirmPassword) {
       alert("Passwords do not match");
       return;
     }
+
 
     try {
       setLoading(true);
@@ -147,10 +153,15 @@ export function AuthPage() {
 
           <input
             type="password"
-            placeholder="Password"
+            placeholder={
+              isLogin
+              ? "Password"
+              : "Password (Enter at least 9 characters)"
+            }
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="w-full py-3 px-4 border rounded-xl"
+            minLength={!isLogin ? 9 : undefined}
             required
           />
 

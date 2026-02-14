@@ -32,6 +32,7 @@ export interface Exercise {
   // ✅ เพิ่มฟิลด์รองรับชื่อที่อาจจะมาจาก Backend
   name?: string; 
   bodyPart?: string;
+  equipment?: string;
   desc?: string;
 }
 
@@ -226,12 +227,56 @@ export function ExercisePlans({
                     )}
                   </div>
 
-                  <button
-                    onClick={() => setShowMenu(plan.id)}
-                    className="p-2 hover:bg-gray-100 rounded-lg"
-                  >
-                    <MoreVertical className="w-5 h-5 text-gray-500" />
-                  </button>
+  <div className="relative">
+  <button
+    onClick={() => setShowMenu(showMenu === plan.id ? null : plan.id)}
+    className="p-2 hover:bg-gray-100 rounded-lg"
+  >
+    <MoreVertical className="w-5 h-5 text-gray-500" />
+  </button>
+
+  {showMenu === plan.id && (
+    <>
+      {/* Overlay */}
+      <div
+        className="fixed inset-0 z-40"
+        onClick={() => setShowMenu(null)}
+      />
+
+      {/* Dropdown */}
+      <div className="absolute right-0 top-full mt-0.5 z-50">
+        <div className="bg-white rounded-xl shadow-xl w-56 p-2 border border-gray-100 flex flex-col">
+          <button
+            onClick={() => handleSetActive(plan.id)}
+            className="w-full flex items-center gap-3 p-2 hover:bg-gray-100 rounded-lg text-blue-700 transition-colors"
+          >
+            <Target className="w-4 h-4" />
+            <span className="text-sm font-medium">Active</span>
+          </button>
+
+          <button
+            onClick={() => handlePinPlan(plan.id)}
+            className="w-full flex items-center gap-3 p-2 hover:bg-gray-100 rounded-lg text-yellow-700 transition-colors"
+          >
+            <Pin className="w-4 h-4" />
+            <span className="text-sm font-medium">
+              {isPinned ? "Unpin" : "Pin"}
+            </span>
+          </button>
+
+          <button
+            onClick={() => handleDeletePlan(plan.id)}
+            className="w-full flex items-center gap-3 p-2 hover:bg-red-50 rounded-lg text-red-600 transition-colors"
+          >
+            <Trash2 className="w-4 h-4" />
+            <span className="text-sm font-medium">Delete</span>
+          </button>
+        </div>
+      </div>
+    </>
+  )}
+</div>
+
                 </div>
 
                 {/* Content */}
@@ -302,44 +347,7 @@ export function ExercisePlans({
 
               {/* Menu */}
               {/* Menu */}
-              {showMenu === plan.id && (
-                <>
-                  {/* ฉากหลังใสสำหรับกดปิดเมนู (Overlay) */}
-                  <div 
-                    className="fixed inset-0 z-40" 
-                    onClick={() => setShowMenu(null)} 
-                  />
-                  
-                  {/* ตัวเมนู - ปรับตำแหน่งให้อยู่ใต้ปุ่มสามจุดพอดี */}
-                  <div className="absolute right-4 top-14 z-50">
-                    <div className="bg-white rounded-xl shadow-xl w-56 p-2 border border-gray-100 flex flex-col">
-                      <button
-                        onClick={() => handleSetActive(plan.id)}
-                        className="w-full flex items-center gap-3 p-2 hover:bg-gray-100 rounded-lg text-blue-700 transition-colors"
-                      >
-                        <Target className="w-4 h-4" />
-                        <span className="text-sm font-medium">Set as Active</span>
-                      </button>
-
-                      <button
-                        onClick={() => handlePinPlan(plan.id)}
-                        className="w-full flex items-center gap-3 p-2 hover:bg-gray-100 rounded-lg text-yellow-700 transition-colors"
-                      >
-                        <Pin className="w-4 h-4" />
-                        <span className="text-sm font-medium">{isPinned ? "Unpin" : "Pin"}</span>
-                      </button>
-
-                      <button
-                        onClick={() => handleDeletePlan(plan.id)}
-                        className="w-full flex items-center gap-3 p-2 hover:bg-red-50 rounded-lg text-red-600 transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                        <span className="text-sm font-medium">Delete</span>
-                      </button>
-                    </div>
-                  </div>
-                </>
-              )}
+              
             </div>
           );
         })}
