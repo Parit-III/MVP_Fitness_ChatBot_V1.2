@@ -202,7 +202,7 @@ export function ExercisePlans({
             borderColor = "#facc15";
           }
 
-          console.log(`${plan.name} Border is seted as ${borderColor}`)
+          // console.log(`${plan.name} Border is seted as ${borderColor}`)
 
           return (
             <div

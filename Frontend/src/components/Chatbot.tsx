@@ -270,7 +270,7 @@ export function Chatbot({ userName, availableExercises }: ChatbotProps) {
 
     // --- 2. PREPARE MESSAGES ---
     const userMsg: Message = {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       text: currentInput,
       senderRole: "user",
       senderId: user.uid,
@@ -370,8 +370,8 @@ export function Chatbot({ userName, availableExercises }: ChatbotProps) {
 
       {/* This area is now flex-1 and overflow-y-auto to allow scrolling inside the fixed box */}
       <div className={`flex-1 overflow-y-auto p-6 space-y-4 ${toggled ? "bg-gray-50" : "bg-indigo-50"}`}>
-        {currentMessages.map((m) => (
-          <div key={m.id} className={`flex ${m.senderRole === "user" ? "justify-end" : "justify-start"}`}>
+        {currentMessages.map((m, index) => (
+          <div key={`${m.id}-${index}`} className={`flex ${m.senderRole === "user" ? "justify-end" : "justify-start"}`}>
             <div className={`max-w-[80%] rounded-2xl px-4 py-3 ${m.senderRole === "user" ? (toggled ? "bg-indigo-600" : "bg-blue-600") + " text-white" : "bg-white shadow-md"}`}>
               {m.senderRole === "bot" && <p className="text-xs text-gray-400 mb-1">{m.senderName}</p>}
               <p className="text-sm whitespace-pre-line">{m.text}</p>
